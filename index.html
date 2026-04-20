@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ASX/REBAL — Index Rebalance Forecaster</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#05070d;--s1:#090c14;--s2:#0d1120;--s3:#111827;
-  --b0:#0f1628;--b1:#162036;--b2:#1e2d4a;--b3:#26395e;
+  --b0:#0f1628;--b1:#162036;--b2:#1e2d4a;
   --t1:#e4eaf5;--t2:#8da0be;--t3:#4e6285;--t4:#283348;
   --acc:#1e6ef4;--acc2:#3b82f6;
-  --add:#00c48c;--add2:#34d399;--addbg:rgba(0,196,140,.08);--addbd:rgba(52,211,153,.2);
-  --rem:#f43535;--rem2:#f87171;--rembg:rgba(244,53,53,.08);--rembd:rgba(248,113,113,.2);
+  --add:#00c48c;--add2:#34d399;--addbg:rgba(0,196,140,.08);--addbd:rgba(52,211,153,.22);
+  --rem:#f43535;--rem2:#f87171;--rembg:rgba(244,53,53,.08);--rembd:rgba(248,113,113,.22);
   --prob:#f5a623;--probbg:rgba(245,166,35,.08);--probbd:rgba(245,166,35,.25);
   --poss:#8b5cf6;--possbg:rgba(139,92,246,.08);--possbd:rgba(167,139,250,.25);
   --ma:#e879a0;--mabg:rgba(232,121,160,.08);--mabd:rgba(232,121,160,.25);
@@ -29,71 +28,63 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 
 /* HEADER */
-.hdr{position:sticky;top:0;z-index:300;background:rgba(5,7,13,.95);backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--b1);padding:0 24px;height:52px;
-  display:flex;align-items:center;gap:0;}
+.hdr{position:sticky;top:0;z-index:300;background:rgba(5,7,13,.96);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--b1);padding:0 24px;height:52px;display:flex;align-items:center;gap:0;}
 .logo{font-family:var(--disp);font-size:16px;font-weight:800;letter-spacing:-.5px;margin-right:20px;}
 .logo .sl{color:var(--acc2);}
 .logo .sub{font-family:var(--mono);font-size:8px;font-weight:400;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-left:8px;align-self:center;}
-.sep{width:1px;height:26px;background:var(--b2);margin:0 16px;}
+.hsep{width:1px;height:26px;background:var(--b2);margin:0 16px;}
 .hmeta{display:flex;gap:18px;align-items:center;}
 .hm{display:flex;flex-direction:column;gap:1px;}
 .hml{font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;}
 .hmv{font-size:11px;color:var(--prob);font-weight:600;}
-.hprog{display:flex;flex-direction:column;gap:3px;min-width:150px;}
+.hprog{display:flex;flex-direction:column;gap:3px;min-width:140px;}
 .hprog .hml{display:flex;justify-content:space-between;}
 .pt{height:2px;background:var(--b2);border-radius:1px;overflow:hidden;}
-.pf{height:100%;background:linear-gradient(90deg,var(--acc),var(--poss));border-radius:1px;transition:width .6s;}
+.pf{height:100%;background:linear-gradient(90deg,var(--acc),var(--poss));border-radius:1px;}
 .hr{margin-left:auto;display:flex;align-items:center;gap:8px;}
 .lbadge{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:600;padding:3px 9px;border-radius:3px;letter-spacing:.5px;text-transform:uppercase;}
 .lb-live{background:var(--addbg);color:var(--add2);border:1px solid var(--addbd);}
-.lb-stale{background:var(--probbg);color:var(--prob);border:1px solid var(--probbd);}
+.lb-fetch{background:var(--probbg);color:var(--prob);border:1px solid var(--probbd);}
+.lb-err{background:var(--rembg);color:var(--rem2);border:1px solid var(--rembd);}
 .ldot{width:5px;height:5px;border-radius:50%;background:currentColor;}
 .ldot.pulse{animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 .hbtn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:4px;cursor:pointer;
   border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;
-  letter-spacing:.5px;text-transform:uppercase;transition:all .15s;font-family:var(--mono);}
+  letter-spacing:.5px;text-transform:uppercase;font-family:var(--mono);transition:all .15s;}
 .hbtn:hover{border-color:var(--acc2);color:var(--acc2);}
-.hbtn-accent{background:rgba(30,110,244,.12);border-color:rgba(30,110,244,.35);color:#60a5fa;}
-.hbtn-accent:hover{background:rgba(30,110,244,.2);border-color:var(--acc2);}
+.hbtn-a{background:rgba(30,110,244,.12);border-color:rgba(30,110,244,.35);color:#60a5fa;}
+.hbtn-g{background:rgba(0,196,140,.1);border-color:rgba(0,196,140,.3);color:var(--add2);}
 
-/* STATUS BAR */
-.status-bar{background:var(--s1);border-bottom:1px solid var(--b1);
-  padding:6px 24px;display:flex;align-items:center;gap:16px;font-size:9px;color:var(--t3);}
-.sb-item{display:flex;align-items:center;gap:5px;}
-.sb-dot{width:6px;height:6px;border-radius:50%;}
-.sd-ok{background:var(--add2);}
-.sd-warn{background:var(--prob);}
-.sd-err{background:var(--rem2);}
-.sd-info{background:var(--acc2);}
-.sb-val{color:var(--t2);font-weight:500;}
+/* PROGRESS BAR (fetch) */
+.fetch-bar{height:2px;background:var(--b2);overflow:hidden;display:none;}
+.fetch-bar.show{display:block;}
+.fetch-fill{height:100%;background:linear-gradient(90deg,var(--acc2),var(--add2));width:0%;transition:width .3s;}
 
 /* CARDS */
-.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--b0);border-bottom:1px solid var(--b1);position:relative;z-index:1;}
-.card{background:var(--s1);padding:13px 18px;display:flex;flex-direction:column;gap:3px;}
-.card-l{font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:2px;}
-.card-v{font-family:var(--disp);font-size:24px;font-weight:700;line-height:1;letter-spacing:-1px;}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--b0);border-bottom:1px solid var(--b1);position:relative;z-index:1;}
+.card{background:var(--s1);padding:12px 16px;display:flex;flex-direction:column;gap:3px;}
+.card-l{font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;}
+.card-v{font-family:var(--disp);font-size:22px;font-weight:700;line-height:1;letter-spacing:-1px;}
 .card-s{font-size:9px;color:var(--t3);}
-.cv-a{color:var(--add2);} .cv-r{color:var(--rem2);} .cv-p{color:var(--prob);} .cv-b{color:var(--acc2);}
+.cv-a{color:var(--add2);} .cv-r{color:var(--rem2);} .cv-p{color:var(--prob);} .cv-b{color:var(--acc2);} .cv-t{color:var(--t2);}
 
 /* TABS */
 .tabs-bar{background:var(--s1);border-bottom:1px solid var(--b1);padding:0 24px;display:flex;align-items:center;position:relative;z-index:1;}
-.tab{padding:12px 14px;font-size:10px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;
-  cursor:pointer;color:var(--t3);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.tab{padding:12px 13px;font-size:10px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
 .tab:hover{color:var(--t1);}
 .tab.on{color:var(--acc2);border-bottom-color:var(--acc2);}
-.tabs-r{margin-left:auto;display:flex;align-items:center;gap:8px;padding:7px 0;}
+.tabs-r{margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 0;}
 .aum-g{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--t3);}
-.aum-i{background:var(--s2);border:1px solid var(--b2);border-radius:3px;color:var(--t1);
-  font-family:var(--mono);font-size:9px;padding:3px 6px;width:48px;text-align:right;}
+.aum-i{background:var(--s2);border:1px solid var(--b2);border-radius:3px;color:var(--t1);font-family:var(--mono);font-size:9px;padding:3px 6px;width:46px;text-align:right;}
 .aum-i:focus{outline:none;border-color:var(--acc2);}
 
 /* TIMELINE */
-.tl-bar{background:var(--s1);border-bottom:1px solid var(--b1);padding:11px 24px 13px;position:relative;z-index:1;}
-.tl{position:relative;height:34px;margin:0 16px;}
+.tl-bar{background:var(--s1);border-bottom:1px solid var(--b1);padding:10px 24px 13px;position:relative;z-index:1;}
+.tl{position:relative;height:34px;margin:0 12px;}
 .tl-track{position:absolute;top:7px;left:0;right:0;height:1px;background:var(--b2);}
-.tl-fill{position:absolute;top:7px;left:0;height:1px;background:var(--acc);transition:width .5s;}
+.tl-fill{position:absolute;top:7px;left:0;height:1px;background:var(--acc);}
 .tl-n{position:absolute;top:0;transform:translateX(-50%);}
 .tl-pip{width:7px;height:7px;border-radius:50%;margin:2px auto;border:1.5px solid var(--b2);background:var(--b0);}
 .tl-pip.done{background:var(--acc);border-color:var(--acc);}
@@ -102,10 +93,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .tl-txt b{color:var(--t2);display:block;font-weight:500;}
 
 /* ASSUMPTIONS */
-.assm{background:linear-gradient(90deg,rgba(30,110,244,.04),transparent 60%);
+.assm{background:linear-gradient(90deg,rgba(30,110,244,.04),transparent);
   border-bottom:1px solid var(--b0);border-left:2px solid var(--acc);
   padding:7px 24px;font-size:8px;color:var(--t3);line-height:1.8;position:relative;z-index:1;}
-.assm .row{display:flex;gap:20px;flex-wrap:wrap;}
+.assm .row{display:flex;gap:18px;flex-wrap:wrap;}
 .assm b{color:var(--t2);} .assm .warn{color:var(--prob);}
 
 /* MAIN */
@@ -115,19 +106,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .isec-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);
   border:1px solid var(--b1);border-bottom:none;border-radius:6px 6px 0 0;cursor:pointer;user-select:none;}
 .isec-hdr:hover{background:var(--s3);}
-.idx-pill{font-family:var(--disp);font-size:11px;font-weight:700;padding:2px 9px;border-radius:3px;letter-spacing:.3px;}
+.idx-pill{font-family:var(--disp);font-size:11px;font-weight:700;padding:2px 9px;border-radius:3px;}
 .p300{background:rgba(232,121,160,.12);color:#f9a8d4;border:1px solid rgba(232,121,160,.25);}
 .p200{background:rgba(0,196,140,.12);color:#34d399;border:1px solid rgba(0,196,140,.25);}
 .p100{background:rgba(245,166,35,.12);color:#fbbf24;border:1px solid rgba(245,166,35,.25);}
 .p50{background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.25);}
 .p20{background:rgba(30,110,244,.12);color:#60a5fa;border:1px solid rgba(30,110,244,.25);}
-.ititle{font-family:var(--disp);font-size:12px;font-weight:600;color:var(--t1);}
+.ititle{font-family:var(--disp);font-size:12px;font-weight:600;}
 .imeta{font-size:8px;color:var(--t3);}
 .ichips{display:flex;gap:4px;margin-left:auto;}
-.chip{font-size:8px;padding:2px 6px;border-radius:2px;font-weight:600;letter-spacing:.3px;}
+.chip{font-size:8px;padding:2px 6px;border-radius:2px;font-weight:600;}
 .ch-a{background:var(--addbg);color:var(--add2);border:1px solid var(--addbd);}
 .ch-r{background:var(--rembg);color:var(--rem2);border:1px solid var(--rembd);}
-.chev{color:var(--t3);font-size:9px;transition:transform .2s;margin-left:6px;}
+.chev{color:var(--t3);font-size:9px;transition:transform .2s;margin-left:4px;}
 .chev.op{transform:rotate(180deg);}
 .tbl-outer{border:1px solid var(--b1);border-top:none;border-radius:0 0 6px 6px;overflow:hidden;display:none;}
 .tbl-outer.op{display:block;}
@@ -139,37 +130,33 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* TABLE */
 table{width:100%;border-collapse:collapse;}
-thead th{padding:5px 8px;text-align:left;background:var(--s2);font-size:7.5px;font-weight:600;
-  color:var(--t3);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--b1);white-space:nowrap;}
+thead th{padding:5px 8px;text-align:left;background:var(--s2);font-size:7.5px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--b1);white-space:nowrap;cursor:help;}
 thead th:first-child{padding-left:12px;}
 tbody tr{border-bottom:1px solid rgba(22,32,54,.7);cursor:pointer;transition:background .1s;}
 tbody tr:last-child{border-bottom:none;}
 tbody tr:hover{background:rgba(30,110,244,.04);}
 tbody tr.xp{background:rgba(30,110,244,.06);}
-td{padding:8px 8px;vertical-align:middle;white-space:nowrap;}
+td{padding:7px 8px;vertical-align:middle;white-space:nowrap;}
 td:first-child{padding-left:12px;}
 
-/* BADGES */
+/* CELLS */
 .pb{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:2px;font-size:7.5px;font-weight:700;letter-spacing:.4px;}
 .pb-sa{background:var(--addbg);color:var(--add2);border:1px solid var(--addbd);}
 .pb-sr{background:var(--rembg);color:var(--rem2);border:1px solid var(--rembd);}
 .pb-ps{background:var(--possbg);color:#c4b5fd;border:1px solid var(--possbd);}
 .pb-wt{background:rgba(78,98,133,.1);color:var(--t3);border:1px solid var(--b2);}
 .bdot{width:4px;height:4px;border-radius:50%;background:currentColor;}
-
-/* CELLS */
 .tkr{font-weight:700;font-size:11px;color:var(--t1);}
 .co{color:var(--t2);font-size:9px;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:block;}
 .nv{color:var(--t2);} .np{color:var(--add2);} .nn{color:var(--rem2);} .nw{color:var(--prob);}
 .matag{font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px;background:var(--mabg);color:var(--ma);border:1px solid var(--mabd);margin-left:3px;}
-.iwft{font-size:7px;padding:1px 4px;border-radius:2px;background:rgba(245,166,35,.1);color:var(--prob);border:1px solid rgba(245,166,35,.2);margin-left:3px;}
 .rg{display:flex;align-items:center;gap:5px;}
 .rg-bar{width:36px;height:2px;background:var(--b2);border-radius:1px;overflow:hidden;}
 .rg-fill{height:100%;border-radius:1px;}
 .rf-in{background:var(--add2);} .rf-out{background:var(--rem2);} .rf-near{background:var(--prob);}
 .rg-num{font-size:10px;font-weight:600;}
 .lpx{display:flex;flex-direction:column;gap:1px;}
-.lp-p{font-size:11px;font-weight:600;color:var(--t1);}
+.lp-p{font-size:11px;font-weight:600;}
 .lp-c{font-size:8px;}
 .lup{color:var(--add2);} .ldn{color:var(--rem2);}
 .pti{font-size:9px;line-height:1.5;}
@@ -178,8 +165,9 @@ td:first-child{padding-left:12px;}
 .rl-ok{color:var(--add2);} .rl-w{color:var(--prob);} .rl-b{color:var(--rem2);}
 .dtc-ok{color:var(--add2);} .dtc-m{color:var(--prob);} .dtc-h{color:var(--rem2);}
 .emp{text-align:center;padding:18px!important;color:var(--t4);font-size:9px;font-style:italic;}
+.trend-up{color:var(--add2);font-size:8px;} .trend-dn{color:var(--rem2);font-size:8px;} .trend-fl{color:var(--t3);font-size:8px;}
 
-/* DETAIL */
+/* DETAIL EXPAND */
 .det-row td{padding:0!important;background:var(--s2);}
 .det-panel{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;border-top:1px solid var(--b1);}
 .dp-col{display:flex;flex-direction:column;gap:5px;}
@@ -192,55 +180,34 @@ td:first-child{padding-left:12px;}
 .formula .hlg{color:var(--add2);font-weight:600;}
 .notes-ta{width:100%;height:52px;background:var(--b0);border:1px solid var(--b1);border-radius:3px;color:var(--t1);font-family:var(--mono);font-size:8px;padding:6px;resize:vertical;}
 .notes-ta:focus{outline:none;border-color:var(--acc2);}
-input[type=range]{-webkit-appearance:none;width:90px;height:2px;border-radius:1px;background:var(--b2);outline:none;cursor:pointer;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--acc2);cursor:pointer;}
-.sl-row{display:flex;align-items:center;gap:8px;margin-top:4px;}
-.sl-l{font-size:8px;color:var(--t3);width:70px;}
-.sl-v{font-size:8px;color:var(--acc2);width:45px;}
 
-/* DATA SOURCE PANEL */
-.src-panel{background:rgba(30,110,244,.06);border:1px solid rgba(30,110,244,.2);border-radius:6px;padding:14px 18px;margin-bottom:4px;}
-.src-title{font-family:var(--disp);font-size:12px;font-weight:700;color:var(--acc2);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.src-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
-.src-col h4{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-.src-col p{font-size:9px;color:var(--t3);line-height:1.7;}
-.src-col code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px;color:var(--add2);}
-.src-status{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:9px;}
-.ss-dot{width:7px;height:7px;border-radius:50%;}
+/* CHEAT SHEET */
+.cs-panel{background:var(--s1);border:1px solid var(--b1);border-radius:6px;overflow:hidden;}
+.cs-hdr{background:var(--s2);padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b1);}
+.cs-hdr h3{font-family:var(--disp);font-size:12px;font-weight:700;}
+.cs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+.cs-section{padding:14px 16px;border-right:1px solid var(--b1);border-bottom:1px solid var(--b1);}
+.cs-section:nth-child(3n){border-right:none;}
+.cs-section:nth-last-child(-n+3){border-bottom:none;}
+.cs-section h4{font-size:9px;font-weight:700;color:var(--acc2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.cs-item{margin-bottom:7px;}
+.cs-term{font-size:9px;font-weight:600;color:var(--t1);margin-bottom:2px;}
+.cs-def{font-size:8px;color:var(--t3);line-height:1.6;}
+.cs-def .ex{color:var(--t2);}
+.cs-def .good{color:var(--add2);} .cs-def .bad{color:var(--rem2);} .cs-def .warn{color:var(--prob);}
 
 /* FOOTER */
-.footer{border-top:1px solid var(--b1);padding:11px 24px;font-size:7.5px;color:var(--t4);line-height:1.9;background:var(--s1);position:relative;z-index:1;}
+.footer{border-top:1px solid var(--b1);padding:10px 24px;font-size:7.5px;color:var(--t4);line-height:1.9;background:var(--s1);position:relative;z-index:1;}
 
-/* SPINNER */
-.spin-overlay{position:fixed;inset:0;background:rgba(5,7,13,.9);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-.spin-overlay.hidden{display:none;}
-.spinner{width:28px;height:28px;border:2px solid var(--b2);border-top-color:var(--acc2);border-radius:50%;animation:spin .7s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.spin-msg{font-size:11px;color:var(--t2);}
-.spin-det{font-size:9px;color:var(--t3);}
-
-@media(max-width:860px){
-  .split{grid-template-columns:1fr;}
-  .tside:first-child{border-right:none;border-bottom:1px solid var(--b1);}
-  .cards{grid-template-columns:repeat(3,1fr);}
-  .det-panel{grid-template-columns:1fr;}
-  .hmeta{display:none;}
-  .src-grid{grid-template-columns:1fr;}
-}
+@media(max-width:860px){.split{grid-template-columns:1fr;}.tside:first-child{border-right:none;border-bottom:1px solid var(--b1);}.cards{grid-template-columns:repeat(3,1fr);}.det-panel{grid-template-columns:1fr;}.cs-grid{grid-template-columns:1fr;}.hmeta{display:none;}}
 </style>
 </head>
 <body>
 
-<div class="spin-overlay hidden" id="spin">
-  <div class="spinner"></div>
-  <div class="spin-msg" id="spin-msg">Updating live prices...</div>
-  <div class="spin-det" id="spin-det"></div>
-</div>
-
 <!-- HEADER -->
 <div class="hdr">
   <div class="logo">ASX<span class="sl">/</span>REBAL<span class="sub">Index Rebalance Forecaster</span></div>
-  <div class="sep"></div>
+  <div class="hsep"></div>
   <div class="hmeta">
     <div class="hm"><div class="hml">Announced</div><div class="hmv" id="h-ann">—</div></div>
     <div class="hm"><div class="hml">Effective</div><div class="hmv" id="h-eff">—</div></div>
@@ -251,32 +218,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;heigh
     </div>
   </div>
   <div class="hr">
-    <div class="lbadge lb-stale" id="live-badge">
-      <span class="ldot" id="live-dot"></span>
-      <span id="live-txt">Loading</span>
-    </div>
-    <label class="hbtn hbtn-accent" style="cursor:pointer;" title="Load asx_rebal_data.json from Python fetcher">
-      📂 Load JSON
-      <input type="file" id="json-file" accept=".json" style="display:none" onchange="loadJSON(event)">
+    <div class="lbadge lb-fetch" id="live-badge"><span class="ldot" id="live-dot"></span><span id="live-txt">Loading</span></div>
+    <label class="hbtn hbtn-a" style="cursor:pointer;" title="Load asx_rebal_data.json from Python fetcher">
+      📂 Load JSON<input type="file" id="json-file" accept=".json" style="display:none" onchange="loadJSON(event)">
     </label>
-    <button class="hbtn" onclick="refreshPrices()">↺ Prices</button>
+    <button class="hbtn hbtn-g" id="fetch-btn" onclick="doFetch()">↺ Fetch Live</button>
   </div>
 </div>
-
-<!-- STATUS BAR -->
-<div class="status-bar" id="status-bar">
-  <div class="sb-item"><div class="sb-dot sd-info"></div><span>Data source: <span class="sb-val" id="sb-source">Embedded seed data (Canaccord June 2026)</span></span></div>
-  <div class="sb-item"><div class="sb-dot" id="sb-price-dot" style="background:var(--t4)"></div><span>Live prices: <span class="sb-val" id="sb-price">Not yet fetched</span></span></div>
-  <div class="sb-item"><div class="sb-dot sd-warn"></div><span>IWF: estimated from Yahoo float/shares — <span class="warn" style="color:var(--prob)">dual-listed stocks may overstate FMC</span></span></div>
-</div>
+<div class="fetch-bar" id="fetch-bar"><div class="fetch-fill" id="fetch-fill"></div></div>
 
 <!-- CARDS -->
 <div class="cards">
   <div class="card"><div class="card-l">Strong Additions</div><div class="card-v cv-a" id="cnt-a">—</div><div class="card-s">inside add buffer</div></div>
   <div class="card"><div class="card-l">Strong Removals</div><div class="card-v cv-r" id="cnt-r">—</div><div class="card-s">inside del buffer</div></div>
   <div class="card"><div class="card-l">Buffer Watch</div><div class="card-v cv-p" id="cnt-w">—</div><div class="card-s">possible candidates</div></div>
-  <div class="card"><div class="card-l">ASX 300 Count</div><div class="card-v cv-b" id="cnt-300">—</div><div class="card-s" id="cnt-300-s">target: 300</div></div>
-  <div class="card"><div class="card-l">Last Price Update</div><div class="card-v cv-b" style="font-size:18px" id="last-upd">—</div><div class="card-s">auto-refresh every 60s</div></div>
+  <div class="card"><div class="card-l">Stocks Tracked</div><div class="card-v cv-b" id="cnt-stk">—</div><div class="card-s">ranked by live mkt cap</div></div>
+  <div class="card"><div class="card-l">ASX 300 Count</div><div class="card-v cv-b" id="cnt-300">—</div><div class="card-s" id="cnt-300s">target: 300</div></div>
+  <div class="card"><div class="card-l">Last Updated</div><div class="card-v cv-t" style="font-size:16px" id="last-upd">—</div><div class="card-s">auto-refresh every 60s</div></div>
 </div>
 
 <!-- TABS -->
@@ -287,10 +245,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;heigh
   <div class="tab" onclick="setView('100',this)">ASX 100</div>
   <div class="tab" onclick="setView('50',this)">ASX 50</div>
   <div class="tab" onclick="setView('20',this)">ASX 20</div>
-  <div class="tab" onclick="setView('src',this)">⚙ Data Source</div>
+  <div class="tab" onclick="setView('cs',this)">📖 Column Guide</div>
   <div class="tabs-r">
-    <div class="aum-g"><span>ASX200 AUM A$</span><input class="aum-i" id="aum200" value="80" onchange="recalcAll()">bn</div>
-    <div class="aum-g"><span>ASX300 AUM A$</span><input class="aum-i" id="aum300" value="15" onchange="recalcAll()">bn</div>
+    <div class="aum-g"><span>ASX200 AUM A$</span><input class="aum-i" id="aum200" value="80" onchange="renderAll()">bn</div>
+    <div class="aum-g"><span>ASX300 AUM A$</span><input class="aum-i" id="aum300" value="15" onchange="renderAll()">bn</div>
   </div>
 </div>
 
@@ -300,51 +258,168 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;heigh
 <!-- ASSUMPTIONS -->
 <div class="assm">
   <div class="row">
-    <span><b>FMC:</b> 3m avg(close×shares×IWF) · <span id="a-period">loading...</span></span>
-    <span><b>RL:</b> MDVT÷FMC vs All Ords mkt-cap weighted · ≥50% for ASX200+ · ≥30% for ASX300</span>
-    <span><b>IWF:</b> float÷shares from Yahoo · <span class="warn">dual-listed: CDI count may differ → FMC may be overstated</span></span>
-    <span><b>Volume:</b> <span class="warn">on-market only — RL understated vs S&P DJI</span></span>
-    <span><b>PTI:</b> algebraic solve for avg price needed over remaining ref period days</span>
+    <span><b>Rankings:</b> Live float-adjusted market cap from Yahoo Finance (spot) · <span id="a-period">loading...</span></span>
+    <span><b>RL:</b> MDVT÷mktCap vs All Ords mkt-cap weighted benchmark · ≥50% ASX200+ · ≥30% ASX300</span>
+    <span><b>IWF:</b> float÷shares from Yahoo · <span class="warn">dual-listed CDI stocks may overstate FMC</span></span>
+    <span><b>Note:</b> S&P uses 3-month average FMC for rankings. This tool uses live mkt cap — directionally accurate, slightly different from official S&P calculation.</span>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="main" id="main">
-  <div id="src-view" style="display:none;">
-    <div class="src-panel">
-      <div class="src-title">⚙ Data Source & Update Methods</div>
-      <div class="src-grid">
-        <div class="src-col">
-          <h4>Current Data</h4>
-          <p>This dashboard is pre-loaded with <b style="color:var(--t2)">seed data from the Canaccord Genuity June 2026 rebalance predictions</b> (30 March 2026).<br><br>
-          FMC, rank, RL%, MDV and flow estimates come from this report. Live prices are fetched from Yahoo Finance every 60 seconds and used to update the Price-to-Include calculations.</p>
-          <div class="src-status"><div class="ss-dot" id="seed-dot" style="background:var(--add2)"></div><span id="seed-status" style="color:var(--add2)">Seed data loaded</span></div>
-          <div class="src-status" style="margin-top:4px;"><div class="ss-dot" id="price-dot" style="background:var(--t4)"></div><span id="price-status" style="color:var(--t3)">Live prices: pending</span></div>
+  <!-- Column Guide (hidden by default) -->
+  <div id="cs-view" style="display:none;">
+    <div class="cs-panel">
+      <div class="cs-hdr">
+        <span style="font-size:16px;">📖</span>
+        <h3>Column Guide — What Everything Means</h3>
+        <span style="font-size:9px;color:var(--t3);margin-left:8px;">Hover any column header in the tables for a quick tooltip</span>
+      </div>
+      <div class="cs-grid">
+
+        <div class="cs-section">
+          <h4>Status &amp; Identification</h4>
+          <div class="cs-item">
+            <div class="cs-term">STATUS</div>
+            <div class="cs-def">Probability of index change at the next rebalance.<br>
+              <span class="good">⬆ STRONG</span> — ranked inside the add buffer, meets all criteria. High probability of being added.<br>
+              <span class="bad">⬇ STRONG</span> — ranked outside the delete buffer. High probability of removal.<br>
+              <span style="color:#c4b5fd;">◆ POSS</span> — within ~25 ranks of the buffer. Watch closely — could move in or out.<br>
+              <span class="cs-def" style="color:var(--t3);">○ WATCH</span> — further from buffer but worth monitoring, especially if price is moving.</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">TICKER</div>
+            <div class="cs-def">ASX ticker code. <span class="warn">M&A</span> tag means an acquisition has been announced — this stock is <b>ineligible</b> for index promotion from announcement date per S&P methodology.</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">COMPANY</div>
+            <div class="cs-def">Company name. Click any row to expand the full detail panel.</div>
+          </div>
         </div>
-        <div class="src-col">
-          <h4>📂 Load JSON from Python (Best)</h4>
-          <p>For fully live FMC rankings with 500 stocks, use the Python fetcher:<br><br>
-          1. Open <b style="color:var(--t2)">Command Prompt</b> (Windows key → type <code>cmd</code>)<br>
-          2. Run: <code>pip install yfinance pandas numpy</code><br>
-          3. Run: <code>python data_fetcher.py</code><br>
-          4. Click <b style="color:#60a5fa">📂 Load JSON</b> above and select <code>asx_rebal_data.json</code><br><br>
-          This replaces all seed data with fully calculated live rankings.</p>
-          <label class="hbtn hbtn-accent" style="cursor:pointer;display:inline-flex;margin-top:8px;">
-            📂 Load JSON file
-            <input type="file" accept=".json" style="display:none" onchange="loadJSON(event)">
-          </label>
+
+        <div class="cs-section">
+          <h4>Market Cap &amp; Ranking</h4>
+          <div class="cs-item">
+            <div class="cs-term">FF MKT CAP (Float-Adjusted Market Cap)</div>
+            <div class="cs-def">The primary ranking metric S&P uses. Calculated as:<br>
+              <span class="ex">Price × Shares on Issue × IWF (free float factor)</span><br>
+              S&P uses the <b>3-month daily average</b>. This tool uses <b>live market cap</b> from Yahoo Finance as a real-time proxy. The two will differ slightly — spot mkt cap moves daily while S&P's average smooths out volatility.<br><br>
+              <span class="ex">Example: A$2.5b means the stock ranks by a $2.5 billion float-adjusted market cap.</span></div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">RANK</div>
+            <div class="cs-def">The stock's current rank by FF Mkt Cap among all eligible stocks. <b>Lower number = larger = higher ranked.</b><br><br>
+              The coloured bar shows position relative to the buffer boundary:<br>
+              <span class="good">Green</span> = inside add buffer (non-constituent) or inside del buffer (constituent)<br>
+              <span class="warn">Amber</span> = near the boundary<br>
+              <span class="bad">Red</span> = outside deletion buffer<br><br>
+              <span class="ex">Buffer rules: ASX 200 adds stocks ranked ≤179, removes ≥221. ASX 300 adds ≤274, removes ≥326.</span></div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">IWF (Investable Weight Factor)</div>
+            <div class="cs-def">Free float fraction used in FMC calculation. A stock 100% publicly tradeable = IWF 1.0. A stock with 40% insider/strategic holdings = IWF ~0.6. Minimum IWF of 0.15 required for index entry.<br><br>
+              <span class="warn">For dual-listed stocks (BHP, RIO, AMC etc.), Yahoo may use global share count rather than ASX CDI count — this can make their FMC appear much larger than the ASX-specific reality.</span></div>
+          </div>
         </div>
-        <div class="src-col">
-          <h4>↺ Live Price Refresh</h4>
-          <p>Live prices auto-refresh every 60 seconds from Yahoo Finance (15-20 min delayed).<br><br>
-          Prices update the <b style="color:var(--t2)">Price-to-Include</b> column in real time, showing whether a candidate is tracking above or below its required average.<br><br>
-          The FMC ranks and RL% come from the seed data (or loaded JSON) and are recalculated each refresh.</p>
-          <button class="hbtn hbtn-accent" onclick="refreshPrices();setView('all',document.querySelector('.tab'))" style="margin-top:8px;">↺ Refresh Prices Now</button>
-          <div class="src-status" style="margin-top:8px;"><span id="src-last-price" style="color:var(--t3)">Not yet refreshed</span></div>
+
+        <div class="cs-section">
+          <h4>Price &amp; Liquidity</h4>
+          <div class="cs-item">
+            <div class="cs-term">LIVE PRICE</div>
+            <div class="cs-def">Current market price from Yahoo Finance (15-20 min delayed). The percentage below shows today's change vs prior close.<br>
+              <span class="good">+1.2%</span> = up today &nbsp;&nbsp; <span class="bad">−0.8%</span> = down today</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">RL% (Relative Liquidity)</div>
+            <div class="cs-def">A stock's trading activity relative to the market average. Calculated as:<br>
+              <span class="ex">RL = (Stock's MDVT ÷ Stock's FMC) ÷ Market average × 100</span><br><br>
+              This is a <b>hard gate</b> — a stock must pass this to be eligible, regardless of rank:<br>
+              <span class="good">≥50%</span> required for ASX 200 and above<br>
+              <span class="good">≥30%</span> required for ASX 300<br>
+              <span class="warn">25-50%</span> = at risk of removal from ASX 200<br>
+              <span class="bad">&lt;25%</span> = below removal threshold — will be removed<br><br>
+              <span class="warn">Note: this tool uses on-market volume only. S&P includes off-market block trades, so actual RL will be slightly higher than shown here.</span></div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">MDVT (Median Daily Value Traded)</div>
+            <div class="cs-def">The median dollar value of shares traded per day over the past 3 months. Shown in A$m.<br><br>
+              <span class="ex">Example: MDVT of A$8.5m means on a typical day, $8.5 million of this stock changes hands.</span><br><br>
+              Used to calculate RL% and DTC. Higher MDVT = more liquid = easier for passive funds to trade into.</div>
+          </div>
         </div>
+
+        <div class="cs-section">
+          <h4>Passive Flow</h4>
+          <div class="cs-item">
+            <div class="cs-term">FLOW A$m (Estimated Passive Flow)</div>
+            <div class="cs-def">Estimated dollar value that index-tracking (passive) funds would need to buy or sell if this stock is added or removed at the rebalance. Calculated as:<br>
+              <span class="ex">Passive Flow = (Stock's FMC ÷ Total Index FMC) × Total Passive AUM</span><br><br>
+              <span class="good">+A$24m</span> = passive funds need to BUY ~$24m at the effective date<br>
+              <span class="bad">−A$657m</span> = passive funds need to SELL ~$657m at the effective date<br><br>
+              You can adjust the passive AUM assumptions (top right) if you have better estimates. Defaults: ASX 200 = A$80bn, ASX 300 = A$15bn.</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">DTC (Days to Close)</div>
+            <div class="cs-def">How many days of that stock's average trading volume the passive flow represents:<br>
+              <span class="ex">DTC = Passive Flow ÷ MDVT (in $)</span><br><br>
+              <span class="good">DTC &lt; 1</span> = passive flow is less than one day's volume — easily absorbed, low market impact<br>
+              <span class="warn">DTC 1–5</span> = moderate — passive funds will spread buying/selling over multiple days<br>
+              <span class="bad">DTC &gt; 5</span> = high impact — passive flow is large relative to typical volume. Active managers can trade ahead of this.<br><br>
+              <span class="ex">Example: DTC of 53 days means passive funds need to buy 53 days' worth of average volume — highly price sensitive.</span></div>
+          </div>
+        </div>
+
+        <div class="cs-section">
+          <h4>Price to Include / Exclude</h4>
+          <div class="cs-item">
+            <div class="cs-term">PRICE TO INCLUDE (additions)</div>
+            <div class="cs-def">The average price a stock needs to sustain for the <b>remaining days</b> of the reference period to rank inside the addition buffer by the reference date.<br><br>
+              Formula: <span class="ex">Target FMC × Total Days − FMC already accumulated = FMC still needed ÷ remaining days ÷ (shares × IWF)</span><br><br>
+              <span class="good">−5% from spot</span> = already tracking to qualify — stock needs to fall -5% and it still gets in<br>
+              <span class="warn">+12% from spot</span> = needs a 12% sustained rally from here to qualify<br>
+              <span class="bad">+45% from spot</span> = very unlikely at this stage of the reference period<br><br>
+              <span class="warn">Important: this is the average price needed, not a one-day target. S&P uses the 3-month average, so today's price matters less than sustained movement.</span></div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">PRICE TO EXCLUDE (removals)</div>
+            <div class="cs-def">The average price a current constituent needs to fall to in order to rank outside the deletion buffer by the reference date — i.e. how far it needs to drop to be removed.<br><br>
+              Displayed as: <span class="ex">A$X.XX (+Y% from spot means it needs to rise this much to be safe)</span></div>
+          </div>
+        </div>
+
+        <div class="cs-section">
+          <h4>Key Dates &amp; Rules</h4>
+          <div class="cs-item">
+            <div class="cs-term">Reference Period</div>
+            <div class="cs-def">The 3-month window S&P uses to calculate average FMC and liquidity. Runs from the 2nd-to-last Friday of the month 4 months before effective date, back 3 months.<br><br>
+              <span class="ex">For June 2026: ref period runs ~16 Feb 2026 → 22 May 2026 (reference date)</span></div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">Announcement Date</div>
+            <div class="cs-def">First Friday of the rebalancing month. S&P announces all additions and deletions. This is when the market reacts — stocks being added typically rally, stocks being removed typically fall.</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">Effective Date</div>
+            <div class="cs-def">Third Friday of the rebalancing month. Changes take effect after market close. Passive funds must complete their trades by this date. This is when the actual buying/selling happens — the DTC column shows how many days they have to do it (they can start from announcement).</div>
+          </div>
+          <div class="cs-item">
+            <div class="cs-term">Buffer Rules</div>
+            <div class="cs-def">
+              <span class="ex">ASX 20: add ≤14th rank, remove ≥26th</span><br>
+              <span class="ex">ASX 50: add ≤39th rank, remove ≥61st</span><br>
+              <span class="ex">ASX 100: add ≤84th rank, remove ≥116th</span><br>
+              <span class="ex">ASX 200: add ≤179th rank, remove ≥221st</span><br>
+              <span class="ex">ASX 300: add ≤274th rank, remove ≥326th</span><br><br>
+              The Index Committee has discretion to override these, especially when M&A creates a vacancy mid-quarter.
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
+
+  <!-- Index sections -->
   <div id="idx-300"></div>
   <div id="idx-200"></div>
   <div id="idx-100"></div>
@@ -354,10 +429,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;heigh
 
 <div class="footer">
   <b style="color:var(--t3)">Disclaimer:</b> Quantitative analytical tool only — not financial advice or investment research.
-  Seed data sourced from Canaccord Genuity ASX/S&P June 2026 Rebalance Predictions (30 March 2026).
-  Live prices from Yahoo Finance via CORS proxy (15-20 min delayed, unofficial API).
-  IWF estimated as floatShares÷sharesOutstanding — approximation of S&P DJI proprietary methodology.
-  All outputs indicative only — subject to Index Committee discretion, data revisions and market movements.
+  Rankings use live market cap from Yahoo Finance as a proxy for S&P's 3-month average FMC — directionally accurate but will differ from official S&P calculations.
+  IWF estimated as floatShares÷sharesOutstanding from Yahoo Finance. All outputs indicative only — subject to Index Committee discretion.
   S&P/ASX indices are trademarks of S&P Dow Jones Indices LLC and ASX Operations Pty Ltd. Not for distribution. · williamhctodd.github.io/asx-rebal
 </div>
 
@@ -365,284 +438,355 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;heigh
 'use strict';
 
 // ════════════════════════════════════════════════════════════════════════════
-// SEED DATA — from Canaccord Genuity June 2026 Rebalance (30 March 2026)
-// This is real broker data embedded directly. Live prices update the PTI calc.
-// Format: { ticker, company, currentIndex, maFlag, avgFmc3m (A$m), rank3m,
-//           rl, mdvtAdm, expSharesM, chance, iwf, sharesM, sector }
+// FULL UNIVERSE — All Ords 500 + watch list
+// [ticker, company, currentIndex, iwf_override_or_null, ma_flag]
+// currentIndex: '20'|'50'|'100'|'200'|'300'|'none'
 // ════════════════════════════════════════════════════════════════════════════
-const SEED = [
-  // ── ASX 200 ADDITIONS ───────────────────────────────────────────────────
-  {t:'4DX', co:'4DMedical Ltd.',         ci:'none', ma:true,  fmc:2500,  rank:131, rl:316, mdvt:6.5,  exp:19.1, ch:'Probable', iwf:1.0,  sh:645,  sec:'Health Care'},
-  {t:'ALK', co:'Alkane Resources',        ci:'300',  ma:false, fmc:1570,  rank:169, rl:184, mdvt:10.6, exp:42.6, ch:'Probable', iwf:1.0,  sh:1090, sec:'Materials'},
-  {t:'EOS', co:'Electro Optic Systems',   ci:'none', ma:false, fmc:1480,  rank:177, rl:991, mdvt:2.4,  exp:6.7,  ch:'Probable', iwf:1.0,  sh:321,  sec:'Industrials'},
-  {t:'EQR', co:'EQ Resources Ltd',        ci:'300',  ma:false, fmc:1270,  rank:195, rl:362, mdvt:4.4,  exp:160.9,ch:'Probable', iwf:1.0,  sh:12800,sec:'Materials'},
-  {t:'KCN', co:'Kingsgate Consolidated',  ci:'300',  ma:false, fmc:1250,  rank:197, rl:259, mdvt:5.7,  exp:10.2, ch:'Possible', iwf:1.0,  sh:395,  sec:'Materials'},
-  {t:'MI6', co:'Minerals 260 Limited',    ci:'300',  ma:false, fmc:1230,  rank:199, rl:167, mdvt:9.6,  exp:78.2, ch:'Possible', iwf:1.0,  sh:6200, sec:'Materials'},
-  {t:'ELS', co:'Elsight Limited',         ci:'300',  ma:false, fmc:1230,  rank:200, rl:247, mdvt:6.7,  exp:8.7,  ch:'Possible', iwf:1.0,  sh:258,  sec:'Industrials'},
-  {t:'SSM', co:'Service Stream',          ci:'200',  ma:false, fmc:1200,  rank:202, rl:88,  mdvt:8.0,  exp:24.4, ch:'Possible', iwf:1.0,  sh:880,  sec:'Industrials'},
-  {t:'REG', co:'Regis Healthcare',        ci:'200',  ma:false, fmc:1190,  rank:205, rl:81,  mdvt:4.5,  exp:7.4,  ch:'Possible', iwf:1.0,  sh:820,  sec:'Health Care'},
-  {t:'ELV', co:'Elevra Lithium',          ci:'200',  ma:false, fmc:1170,  rank:207, rl:260, mdvt:4.6,  exp:5.8,  ch:'Possible', iwf:1.0,  sh:9450, sec:'Materials'},
-  {t:'FFM', co:'FireFly Metals Ltd',      ci:'200',  ma:false, fmc:1160,  rank:208, rl:186, mdvt:6.0,  exp:27.0, ch:'Possible', iwf:1.0,  sh:7320, sec:'Materials'},
-  {t:'DVP', co:'Develop Global',          ci:'200',  ma:false, fmc:1150,  rank:209, rl:142, mdvt:5.2,  exp:10.4, ch:'Possible', iwf:1.0,  sh:620,  sec:'Materials'},
-  {t:'DDR', co:'Dicker Data Limited',     ci:'200',  ma:false, fmc:1080,  rank:214, rl:135, mdvt:5.5,  exp:4.9,  ch:'Possible', iwf:1.0,  sh:199,  sec:'Info Tech'},
-  // ── ASX 200 REMOVALS ────────────────────────────────────────────────────
-  {t:'TPW', co:'Temple & Webster',        ci:'200',  ma:false, fmc:690,   rank:264, rl:318, mdvt:8.7,  exp:3.1,  ch:'Probable', iwf:1.0,  sh:95,   sec:'Cons. Disc.', removal:true},
-  {t:'SDR', co:'SiteMinder Limited',      ci:'200',  ma:true,  fmc:750,   rank:257, rl:312, mdvt:12.4, exp:8.1,  ch:'Probable', iwf:1.0,  sh:1000, sec:'Info Tech',   removal:true},
-  {t:'GYG', co:'Guzman y Gomez',          ci:'200',  ma:false, fmc:940,   rank:228, rl:207, mdvt:15.0, exp:1.7,  ch:'Probable', iwf:1.0,  sh:113,  sec:'Cons. Disc.', removal:true},
-  {t:'WEB', co:'WEB Travel Group',        ci:'200',  ma:false, fmc:980,   rank:226, rl:286, mdvt:10.7, exp:11.2, ch:'Probable', iwf:1.0,  sh:870,  sec:'Cons. Disc.', removal:true},
-  {t:'DTL', co:'Data#3 Limited',          ci:'200',  ma:false, fmc:1050,  rank:216, rl:134, mdvt:4.4,  exp:4.8,  ch:'Possible', iwf:1.0,  sh:184,  sec:'Info Tech',   removal:true},
-  {t:'IEL', co:'IDP Education',           ci:'200',  ma:false, fmc:1100,  rank:212, rl:202, mdvt:6.5,  exp:8.7,  ch:'Possible', iwf:1.0,  sh:693,  sec:'Cons. Disc.', removal:true},
-  {t:'NEC', co:'Nine Entertainment',      ci:'200',  ma:false, fmc:1170,  rank:206, rl:163, mdvt:24.0, exp:39.5, ch:'Possible', iwf:1.0,  sh:2300, sec:'Comm. Svcs',  removal:true},
-  {t:'DMP', co:"Domino's Pizza",          ci:'200',  ma:false, fmc:1190,  rank:204, rl:215, mdvt:5.2,  exp:2.1,  ch:'Possible', iwf:1.0,  sh:88,   sec:'Cons. Disc.', removal:true},
-  // ── ASX 100 ADDITIONS ───────────────────────────────────────────────────
-  {t:'PDN', co:'Paladin Energy',          ci:'100',  ma:false, fmc:5160,  rank:87,  rl:194, mdvt:13.9, exp:9.6,  ch:'Probable', iwf:1.0,  sh:2900, sec:'Energy'},
-  {t:'VNT', co:'Ventia Services Group',   ci:'100',  ma:false, fmc:4550,  rank:92,  rl:64,  mdvt:5.3,  exp:17.8, ch:'Possible', iwf:1.0,  sh:1480, sec:'Industrials'},
-  {t:'VAU', co:'Vault Minerals Limited',  ci:'300',  ma:false, fmc:4500,  rank:93,  rl:204, mdvt:6.7,  exp:22.3, ch:'Possible', iwf:1.0,  sh:3200, sec:'Materials'},
-  {t:'AAI', co:'Alcoa Corporation',       ci:'300',  ma:false, fmc:4410,  rank:96,  rl:141, mdvt:5.6,  exp:1.0,  ch:'Possible', iwf:0.35, sh:550,  sec:'Materials'},
-  // ── ASX 100 REMOVALS ────────────────────────────────────────────────────
-  {t:'TWE', co:'Treasury Wine Estates',   ci:'100',  ma:false, fmc:3040,  rank:118, rl:259, mdvt:5.3,  exp:16.9, ch:'Probable', iwf:1.0,  sh:755,  sec:'Cons. Staples', removal:true},
-  {t:'AMP', co:'AMP Limited',             ci:'100',  ma:false, fmc:3250,  rank:111, rl:133, mdvt:6.2,  exp:52.9, ch:'Possible', iwf:1.0,  sh:3250, sec:'Financials',   removal:true},
-  {t:'360', co:'Life360 Inc',             ci:'100',  ma:false, fmc:3300,  rank:109, rl:264, mdvt:8.0,  exp:3.6,  ch:'Possible', iwf:0.85, sh:790,  sec:'Info Tech',    removal:true},
-  {t:'MTS', co:'Metcash Limited',         ci:'100',  ma:false, fmc:3330,  rank:108, rl:124, mdvt:6.5,  exp:23.0, ch:'Possible', iwf:1.0,  sh:1560, sec:'Cons. Staples', removal:true},
-  // ── ASX 50 ADDITIONS ────────────────────────────────────────────────────
-  {t:'ALQ', co:'ALS Ltd.',                ci:'100',  ma:false, fmc:10640, rank:43,  rl:124, mdvt:5.2,  exp:7.5,  ch:'Probable', iwf:1.0,  sh:670,  sec:'Industrials'},
-  {t:'MIN', co:'Mineral Resources',       ci:'100',  ma:false, fmc:9730,  rank:48,  rl:254, mdvt:4.1,  exp:2.6,  ch:'Unlikely', iwf:1.0,  sh:1900, sec:'Materials'},
-  {t:'ORI', co:'Orica Limited',           ci:'100',  ma:false, fmc:9730,  rank:49,  rl:174, mdvt:3.5,  exp:6.9,  ch:'Unlikely', iwf:1.0,  sh:680,  sec:'Materials'},
-  // ── ASX 50 REMOVALS ─────────────────────────────────────────────────────
-  {t:'PME', co:'Pro Medicus',             ci:'50',   ma:false, fmc:6520,  rank:73,  rl:307, mdvt:2.3,  exp:0.6,  ch:'Probable', iwf:1.0,  sh:414,  sec:'Health Care', removal:true},
-  {t:'WTC', co:'Wisetech Global',         ci:'50',   ma:false, fmc:8470,  rank:55,  rl:319, mdvt:3.5,  exp:2.5,  ch:'Unlikely', iwf:1.0,  sh:1030, sec:'Info Tech',   removal:true},
-  {t:'CAR', co:'CAR Group',               ci:'50',   ma:false, fmc:8680,  rank:54,  rl:176, mdvt:3.9,  exp:4.4,  ch:'Unlikely', iwf:1.0,  sh:546,  sec:'Comm. Svcs',  removal:true},
-  // ── ASX 300 ADDITIONS ───────────────────────────────────────────────────
-  {t:'YAL', co:'Yancoal Australia',       ci:'300',  ma:false, fmc:2025,  rank:123, rl:120, mdvt:4.5,  exp:6.9,  ch:'Probable', iwf:1.0,  sh:1320, sec:'Energy'},
-  {t:'WGX', co:'Westgold Resources',      ci:'300',  ma:false, fmc:2723,  rank:129, rl:180, mdvt:5.1,  exp:16.9, ch:'Probable', iwf:1.0,  sh:635,  sec:'Materials'},
-  {t:'GLF', co:'GemLife Communities',     ci:'300',  ma:false, fmc:1424,  rank:183, rl:95,  mdvt:1.8,  exp:4.2,  ch:'Probable', iwf:1.0,  sh:680,  sec:'Real Estate'},
-  {t:'NGI', co:'Navigator Global Inv.',   ci:'300',  ma:false, fmc:1290,  rank:192, rl:155, mdvt:3.2,  exp:7.6,  ch:'Probable', iwf:1.0,  sh:490,  sec:'Financials'},
-  {t:'L1G', co:'L1 Group Limited',        ci:'300',  ma:false, fmc:1055,  rank:219, rl:112, mdvt:1.9,  exp:5.5,  ch:'Probable', iwf:1.0,  sh:420,  sec:'Financials'},
-  {t:'ARU', co:'Arafura Rare Earths',     ci:'300',  ma:false, fmc:1045,  rank:220, rl:145, mdvt:3.4,  exp:12.1, ch:'Probable', iwf:1.0,  sh:8900, sec:'Materials'},
-  {t:'DPM', co:'DPM Metals Inc.',         ci:'none', ma:false, fmc:1003,  rank:227, rl:132, mdvt:2.6,  exp:8.4,  ch:'Probable', iwf:1.0,  sh:420,  sec:'Materials'},
-  {t:'TCG', co:'Turaco Gold Limited',     ci:'none', ma:false, fmc:779,   rank:248, rl:168, mdvt:2.1,  exp:9.8,  ch:'Possible', iwf:1.0,  sh:1650, sec:'Materials'},
-  {t:'MEK', co:'Meeka Metals Limited',    ci:'none', ma:false, fmc:769,   rank:250, rl:142, mdvt:1.7,  exp:8.9,  ch:'Possible', iwf:1.0,  sh:2100, sec:'Materials'},
-  {t:'MAH', co:'Macmahon Holdings',       ci:'none', ma:false, fmc:756,   rank:252, rl:118, mdvt:2.4,  exp:14.6, ch:'Possible', iwf:1.0,  sh:2800, sec:'Industrials'},
-  {t:'CCL', co:'Cuscal Limited',          ci:'none', ma:false, fmc:740,   rank:254, rl:88,  mdvt:1.2,  exp:3.2,  ch:'Possible', iwf:1.0,  sh:245,  sec:'Financials'},
-  {t:'MLX', co:'Metals X Limited',        ci:'none', ma:false, fmc:719,   rank:256, rl:105, mdvt:1.8,  exp:18.5, ch:'Possible', iwf:1.0,  sh:3800, sec:'Materials'},
-  {t:'SMI', co:'Santana Minerals',        ci:'none', ma:false, fmc:706,   rank:258, rl:198, mdvt:1.4,  exp:7.2,  ch:'Possible', iwf:1.0,  sh:1920, sec:'Materials'},
-  {t:'DTR', co:'Dateline Resources',      ci:'none', ma:false, fmc:706,   rank:259, rl:215, mdvt:1.3,  exp:100.9,ch:'Possible', iwf:1.0,  sh:52000,sec:'Materials'},
-  // ── ASX 300 REMOVALS ────────────────────────────────────────────────────
-  {t:'BOT', co:'Botanix Pharmaceuticals', ci:'300',  ma:false, fmc:244,   rank:395, rl:45,  mdvt:0.6,  exp:3.2,  ch:'Probable', iwf:1.0,  sh:3200, sec:'Health Care', removal:true},
-  {t:'MYX', co:'Mayne Pharma Group',      ci:'300',  ma:false, fmc:247,   rank:393, rl:58,  mdvt:0.8,  exp:4.1,  ch:'Probable', iwf:1.0,  sh:4500, sec:'Health Care', removal:true},
-  {t:'AD8', co:'Audinate Group',          ci:'300',  ma:false, fmc:317,   rank:358, rl:82,  mdvt:1.1,  exp:2.8,  ch:'Probable', iwf:1.0,  sh:248,  sec:'Info Tech',   removal:true},
-  {t:'ADH', co:'Adairs Limited',          ci:'300',  ma:false, fmc:319,   rank:356, rl:72,  mdvt:0.9,  exp:3.6,  ch:'Probable', iwf:1.0,  sh:472,  sec:'Cons. Disc.', removal:true},
-  {t:'STX', co:'Strike Energy',           ci:'300',  ma:false, fmc:351,   rank:340, rl:95,  mdvt:1.8,  exp:12.9, ch:'Probable', iwf:1.0,  sh:3600, sec:'Energy',      removal:true},
-  {t:'BRN', co:'BrainChip Holdings',      ci:'300',  ma:false, fmc:367,   rank:334, rl:88,  mdvt:1.9,  exp:16.7, ch:'Probable', iwf:1.0,  sh:9800, sec:'Info Tech',   removal:true},
-  {t:'NXL', co:'Nuix Limited',            ci:'300',  ma:false, fmc:431,   rank:326, rl:110, mdvt:1.6,  exp:5.3,  ch:'Probable', iwf:1.0,  sh:602,  sec:'Info Tech',   removal:true},
-  {t:'COF', co:'Centuria Office REIT',    ci:'300',  ma:false, fmc:447,   rank:324, rl:78,  mdvt:0.8,  exp:9.1,  ch:'Possible', iwf:1.0,  sh:1320, sec:'Real Estate', removal:true},
-  {t:'AX1', co:'Accent Group',            ci:'300',  ma:false, fmc:459,   rank:322, rl:92,  mdvt:1.2,  exp:4.8,  ch:'Possible', iwf:1.0,  sh:870,  sec:'Cons. Disc.', removal:true},
+const UNI = [
+  ['CBA','Commonwealth Bank','20',null,false],['BHP','BHP Group','20',0.998,false],
+  ['CSL','CSL Limited','20',null,false],['NAB','Natl Australia Bank','20',null,false],
+  ['WBC','Westpac Banking','20',null,false],['ANZ','ANZ Group Holdings','20',null,false],
+  ['WES','Wesfarmers','20',null,false],['MQG','Macquarie Group','20',null,false],
+  ['RIO','Rio Tinto','20',0.998,false],['WOW','Woolworths Group','20',null,false],
+  ['GMG','Goodman Group','50',null,false],['TLS','Telstra Group','50',null,false],
+  ['FMG','Fortescue','50',null,false],['ALL','Aristocrat Leisure','50',null,false],
+  ['REA','REA Group','50',null,false],['COL','Coles Group','50',null,false],
+  ['QBE','QBE Insurance','50',null,false],['TCL','Transurban Group','50',null,false],
+  ['WTC','Wisetech Global','50',null,false],['PME','Pro Medicus','50',null,false],
+  ['STO','Santos Limited','50',null,false],['IAG','Insurance Australia Group','50',null,false],
+  ['SUN','Suncorp Group','50',null,false],['AMC','Amcor PLC','50',0.15,false],
+  ['SOL','Washington H Soul Pattinson','50',null,false],['XRO','Xero Limited','50',null,false],
+  ['CAR','CAR Group','50',null,false],
+  ['ORG','Origin Energy','100',null,false],['RMD','ResMed Inc','100',0.062,false],
+  ['MIN','Mineral Resources','100',null,false],['JHX','James Hardie Industries','100',null,false],
+  ['LNW','Light & Wonder','100',0.37,false],['BSL','BlueScope Steel','100',null,false],
+  ['ORI','Orica Limited','100',null,false],['CHC','Charter Hall Group','100',null,false],
+  ['VCX','Vicinity Centres','100',null,false],['GPT','GPT Group','100',null,false],
+  ['SGP','Stockland','100',null,false],['MGR','Mirvac Group','100',null,false],
+  ['DXS','Dexus','100',null,false],['APA','APA Group','100',null,false],
+  ['AZJ','Aurizon Holdings','100',null,false],['TWE','Treasury Wine Estates','100',null,false],
+  ['EBO','EBOS Group','100',null,false],['CWY','Cleanaway Waste','100',null,false],
+  ['NHF','nib holdings','100',null,false],['AGL','AGL Energy','100',null,false],
+  ['SHL','Sonic Healthcare','100',null,false],['RHC','Ramsay Health Care','100',null,false],
+  ['EVN','Evolution Mining','100',null,false],['NST','Northern Star Resources','100',null,false],
+  ['IGO','IGO Limited','100',null,false],['PDN','Paladin Energy','100',null,false],
+  ['ALQ','ALS Limited','100',null,false],['ANN','Ansell Limited','100',null,false],
+  ['DOW','Downer EDI','100',null,false],['SFR','Sandfire Resources','100',null,false],
+  ['HUB','HUB24 Limited','100',null,false],['GQG','GQG Partners','100',null,false],
+  ['NXT','NextDC Limited','100',null,false],['PNI','Pinnacle Investment Mgmt','100',null,false],
+  ['CDA','Codan Limited','100',null,false],['360','Life360 Inc','100',0.85,false],
+  ['MTS','Metcash Limited','100',null,false],['AMP','AMP Limited','100',null,false],
+  ['S32','South32','100',null,false],['BXB','Brambles Limited','100',null,false],
+  ['COH','Cochlear Limited','100',null,false],['CPU','Computershare','100',null,false],
+  ['LYC','Lynas Rare Earths','100',null,false],['QAN','Qantas Airways','100',null,false],
+  ['JBH','JB Hi-Fi','100',null,false],['SEK','Seek Limited','100',null,false],
+  ['WOR','Worley Limited','100',null,false],['NWL','Netwealth Group','100',null,false],
+  ['BEN','Bendigo Adelaide Bank','100',null,false],['BOQ','Bank of Queensland','100',null,false],
+  ['NSR','National Storage REIT','100',null,false],['TNE','Technology One','100',null,false],
+  ['RWC','Reliance Worldwide','100',null,false],['SVW','Seven Group Holdings','100',null,false],
+  ['SCG','Scentre Group','100',null,false],['QUB','QUBE Holdings','100',null,false],
+  ['VEA','Viva Energy Group','100',null,false],['CCP','Credit Corp Group','100',null,false],
+  ['YAL','Yancoal Australia','100',null,false],['NWH','NRW Holdings','100',null,false],
+  ['FPH','Fisher Paykel Healthcare','100',0.998,false],
+  ['SDR','SiteMinder Limited','200',null,true],['WEB','WEB Travel Group','200',null,false],
+  ['TPW','Temple Webster','200',null,false],['GYG','Guzman y Gomez','200',null,false],
+  ['ABB','Aussie Broadband','200',null,false],['SLC','Superloop Limited','200',null,false],
+  ['MFG','Magellan Financial','200',null,false],['DMP','Dominos Pizza','200',null,false],
+  ['MP1','Megaport Limited','200',null,false],['SSM','Service Stream','200',null,false],
+  ['REG','Regis Healthcare','200',null,false],['ELV','Elevra Lithium','200',null,false],
+  ['FFM','FireFly Metals','200',null,false],['DDR','Dicker Data','200',null,false],
+  ['DTL','Data#3 Limited','200',null,false],['NEC','Nine Entertainment','200',null,false],
+  ['PMV','Premier Investments','200',null,false],['NCK','Nick Scali','200',null,false],
+  ['SIQ','Smartgroup Corp','200',null,false],['LIC','Lifestyle Communities','200',null,false],
+  ['IEL','IDP Education','200',null,false],['TLX','Telix Pharmaceuticals','200',null,false],
+  ['ARF','Arena REIT','200',null,false],['DVP','Develop Global','200',null,false],
+  ['IRE','IRESS Limited','200',null,false],['PNR','Pantoro Gold','200',null,false],
+  ['HVN','Harvey Norman','200',null,false],['LOV','Lovisa Holdings','200',null,false],
+  ['MAQ','Macquarie Telecom','200',null,false],['MPL','Medibank Private','200',null,false],
+  ['ORA','Orora Limited','200',null,false],['PLS','Pilbara Minerals','200',null,false],
+  ['PRU','Perseus Mining','200',null,false],['WHC','Whitehaven Coal','200',null,false],
+  ['WGX','Westgold Resources','200',null,false],['AUB','AUB Group','200',null,false],
+  ['BPT','Beach Energy','200',null,false],['CGF','Challenger Limited','200',null,false],
+  ['CMM','Capricorn Metals','200',null,false],['COF','Centuria Office REIT','200',null,false],
+  ['DRR','Deterra Royalties','200',null,false],['ELD','Elders Limited','200',null,false],
+  ['EMR','Emerald Resources','200',null,false],['FLT','Flight Centre','200',null,false],
+  ['GNC','Graincorp','200',null,false],['GOR','Gold Road Resources','200',null,false],
+  ['ILU','Iluka Resources','200',null,false],['LLC','Lendlease Group','200',null,false],
+  ['NIC','Nickel Industries','200',null,false],['RRL','Regis Resources','200',null,false],
+  ['SCP','Shopping Centres Aust','200',null,false],['SGM','Sims Limited','200',null,false],
+  ['SLR','Silver Lake Resources','200',null,false],['TAH','Tabcorp Holdings','200',null,false],
+  ['4DX','4D Medical','none',null,true],['ALK','Alkane Resources','300',null,false],
+  ['EOS','Electro Optic Systems','none',null,false],['EQR','EQ Resources','300',null,false],
+  ['KCN','Kingsgate Consolidated','300',null,false],['MI6','Minerals 260','300',null,false],
+  ['ELS','Elsight Limited','300',null,false],['GLF','GemLife Communities','300',null,false],
+  ['NGI','Navigator Global','300',null,false],['L1G','L1 Group Limited','300',null,false],
+  ['ARU','Arafura Rare Earths','300',null,false],['DPM','DPM Metals','none',null,false],
+  ['TCG','Turaco Gold','none',null,false],['MEK','Meeka Metals','none',null,false],
+  ['MAH','Macmahon Holdings','none',null,false],['CCL','Cuscal Limited','none',null,false],
+  ['MLX','Metals X','none',null,false],['SMI','Santana Minerals','none',null,false],
+  ['DTR','Dateline Resources','none',null,false],['SBM','St Barbara','300',null,false],
+  ['SRL','Sunrise Energy Metals','none',null,false],['C79','Chrysos Corporation','300',null,false],
+  ['NXL','Nuix Limited','300',null,false],['AD8','Audinate Group','300',null,false],
+  ['ADH','Adairs Limited','300',null,false],['STX','Strike Energy','300',null,false],
+  ['BRN','BrainChip Holdings','300',null,false],['BOT','Botanix Pharmaceuticals','300',null,false],
+  ['MYX','Mayne Pharma','300',null,false],['CXO','Core Lithium','300',null,false],
+  ['AX1','Accent Group','300',null,false],['VUL','Vulcan Energy','none',null,false],
+  ['SRG','SRG Global','none',null,false],['PDI','Predictive Discovery','none',null,false],
+  ['A2M','a2 Milk Company','300',null,false],['RMS','Ramelius Resources','200',null,false],
+  ['WAF','West African Resources','200',null,false],['GEM','G8 Education','300',null,false],
+  ['BBN','Baby Bunting Group','300',null,false],['NHC','New Hope Corporation','200',null,false],
+  ['IPH','IPH Limited','100',null,false],['CTD','Corporate Travel Mgmt','200',null,false],
+  ['PPT','Perpetual Limited','200',null,false],['BKW','Brickworks','300',null,false],
+  ['CKF','Collins Foods','300',null,false],['GUD','G.U.D. Holdings','300',null,false],
+  ['HDN','HomeCo Daily Needs REIT','200',null,false],['INA','Ingenia Communities','200',null,false],
+  ['JLG','Johns Lyng Group','200',null,false],['MMS','McMillan Shakespeare','200',null,false],
+  ['MND','Monadelphous Group','200',null,false],['NAN','Nanosonics','200',null,false],
+  ['OBL','Omni Bridgeway','200',null,false],['PNV','PolyNovo','200',null,false],
+  ['SGR','Star Entertainment Group','200',null,false],['SIG','Sigma Healthcare','200',null,false],
+  ['SUL','Super Retail Group','100',null,false],['BAP','Bapcor Limited','100',null,false],
+  ['ARB','ARB Corporation','100',null,false],['DEG','De Grey Mining','200',null,false],
+  ['CHN','Chalice Mining','200',null,false],['RSG','Resolute Mining','200',null,false],
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
-// BUFFER / METHODOLOGY RULES
+// CONFIG
 // ════════════════════════════════════════════════════════════════════════════
-const BUFFERS = {
-  '20': {add:14,del:26}, '50': {add:39,del:61},
-  '100':{add:84,del:116},'200':{add:179,del:221},
-  '300':{add:274,del:326},
-};
-const RL_MIN = {'20':50,'50':50,'100':50,'200':50,'300':30};
-const RL_REM = {'20':25,'50':25,'100':25,'200':25,'300':15};
-const AUM_DEF = {'20':8,'50':15,'100':25,'200':80,'300':15};
-const PROXIES = [
-  u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u=>`https://thingproxy.freeboard.io/fetch/${u}`,
-];
-let WPRX = 0;
+const BUFFERS={'20':{add:14,del:26},'50':{add:39,del:61},'100':{add:84,del:116},'200':{add:179,del:221},'300':{add:274,del:326}};
+const RL_MIN={'20':50,'50':50,'100':50,'200':50,'300':30};
+const RL_REM={'20':25,'50':25,'100':25,'200':25,'300':15};
+const AUM_DEF={'20':8,'50':15,'100':25,'200':80,'300':15};
+const PROXIES=[u=>`https://corsproxy.io/?${encodeURIComponent(u)}`,u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`];
+let WPRX=0;
 
 // ════════════════════════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════════════════════════
-const G = {
-  stocks: {},   // live price + override data keyed by ticker
-  dates: {},
-  lastLive: 0,
-  liveTimer: null,
+const G={
+  stocks:{},    // ticker -> {mktCap, floatCap, price, prevClose, chgPct, sharesM, floatM, iwf, avgVol, mdvtAdm, rl, rank}
+  ranked:[],    // sorted array of tickers by floatCap
+  dates:{},
+  lastFetch:0,
+  timer:null,
+  fetchCount:0,
 };
 
 // ════════════════════════════════════════════════════════════════════════════
 // DATE LOGIC
 // ════════════════════════════════════════════════════════════════════════════
-const HOLS = new Set(['2025-01-01','2025-01-27','2025-04-18','2025-04-21','2025-04-25','2025-06-09','2025-12-25','2025-12-26','2026-01-01','2026-01-26','2026-04-03','2026-04-06','2026-04-07','2026-04-25','2026-06-08','2026-12-25','2026-12-28','2027-01-01','2027-01-26','2027-03-26','2027-03-29','2027-04-26','2027-06-14','2027-12-27','2027-12-28']);
+const HOLS=new Set(['2025-01-01','2025-01-27','2025-04-18','2025-04-21','2025-04-25','2025-06-09','2025-12-25','2025-12-26','2026-01-01','2026-01-26','2026-04-03','2026-04-06','2026-04-07','2026-04-25','2026-06-08','2026-12-25','2026-12-28','2027-01-01','2027-01-26','2027-03-26','2027-03-29','2027-04-26','2027-06-14','2027-12-27','2027-12-28']);
 function isTD(d){const w=d.getDay();return w>0&&w<6&&!HOLS.has(d.toISOString().split('T')[0]);}
 function nthFri(y,m,n){const d=new Date(y,m-1,1);let f=0;while(true){if(d.getDay()===5){f++;if(f===n)return new Date(d);}d.setDate(d.getDate()+1);}}
 function s2lFri(y,m){const fr=[];const d=new Date(y,m-1,1);while(d.getMonth()===m-1){if(d.getDay()===5)fr.push(new Date(d));d.setDate(d.getDate()+1);}return fr[fr.length-2];}
-function cTD(s,e){let c=0;const d=new Date(s);while(d<=e){if(isTD(d))c++;d.setDate(d.getDate()+1);}return c;}
-
+function cTD(s,e){let c=0,d=new Date(s);while(d<=e){if(isTD(d))c++;d.setDate(d.getDate()+1);}return c;}
 function getRebalDates(){
-  const today=new Date();
-  const mos=[3,6,9,12];
+  const today=new Date();const mos=[3,6,9,12];
   let ann,yr,mo;
   for(const m of mos){const a=nthFri(today.getFullYear(),m,1);if(a>today){ann=a;yr=today.getFullYear();mo=m;break;}}
   if(!ann){yr=today.getFullYear()+1;mo=3;ann=nthFri(yr,mo,1);}
   const eff=nthFri(yr,mo,3);
   const pm=mo===1?12:mo-1,py=mo===1?yr-1:yr;
   const refEnd=s2lFri(py,pm);
-  const rsApx=new Date(refEnd);rsApx.setDate(rsApx.getDate()-95);
-  while(!isTD(rsApx))rsApx.setDate(rsApx.getDate()+1);
-  const total=cTD(rsApx,refEnd);
-  const now=today<rsApx?rsApx:today>refEnd?refEnd:today;
-  const elapsed=cTD(rsApx,now);
+  const rs=new Date(refEnd);rs.setDate(rs.getDate()-95);
+  while(!isTD(rs))rs.setDate(rs.getDate()+1);
+  const total=cTD(rs,refEnd);
+  const now=today<rs?rs:today>refEnd?refEnd:today;
+  const elapsed=cTD(rs,now);
   const tom=new Date(today);tom.setDate(tom.getDate()+1);
-  const remaining=tom>refEnd?0:cTD(tom,refEnd);
-  return {refStart:rsApx,refEnd,annDate:ann,effDate:eff,total,elapsed,remaining,pct:Math.round(elapsed/total*100)};
+  const rem=tom>refEnd?0:cTD(tom,refEnd);
+  return{refStart:rs,refEnd,annDate:ann,effDate:eff,total,elapsed,remaining:rem,pct:Math.round(elapsed/total*100)};
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// LIVE PRICE FETCH — single batched call for all seed tickers
+// FETCH — uses Yahoo v7 batch quote (all stocks in ONE call)
 // ════════════════════════════════════════════════════════════════════════════
 async function fetchProxy(url,att=0){
   if(att>=PROXIES.length*2)throw new Error('All proxies failed');
   const pi=(WPRX+att)%PROXIES.length;
   try{
-    const r=await fetch(PROXIES[pi](url),{signal:AbortSignal.timeout(15000)});
-    if(r.status===429){WPRX=(WPRX+1)%PROXIES.length;await sleep(1500*(att+1));return fetchProxy(url,att+1);}
-    if(!r.ok)throw new Error(`${r.status}`);
+    const r=await fetch(PROXIES[pi](url),{signal:AbortSignal.timeout(18000)});
+    if(r.status===429){WPRX=(WPRX+1)%PROXIES.length;await new Promise(res=>setTimeout(res,1500*(att+1)));return fetchProxy(url,att+1);}
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
     WPRX=pi;return await r.json();
-  }catch(e){await sleep(600);return fetchProxy(url,att+1);}
+  }catch(e){await new Promise(res=>setTimeout(res,600));return fetchProxy(url,att+1);}
 }
 
-async function fetchLivePrices(){
-  // Get all unique tickers from seed data
-  const tickers=[...new Set(SEED.map(s=>s.t))];
-  // Yahoo v7 quote lets us batch up to ~100 symbols in ONE call — far fewer 429s
-  const symbols=tickers.map(t=>t+'.AX').join(',');
-  const url=`https://query2.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketPreviousClose,regularMarketChangePercent`;
-  try{
-    const data=await fetchProxy(url);
-    const quotes=data?.quoteResponse?.result||[];
-    let updated=0;
-    for(const q of quotes){
-      const tkr=q.symbol.replace('.AX','');
-      if(!G.stocks[tkr])G.stocks[tkr]={};
-      G.stocks[tkr].curPrice=q.regularMarketPrice||null;
-      G.stocks[tkr].prevClose=q.regularMarketPreviousClose||null;
-      G.stocks[tkr].chgPct=q.regularMarketChangePercent||null;
-      updated++;
-    }
-    G.lastLive=Date.now();
-    document.getElementById('sb-price-dot').style.background='var(--add2)';
-    document.getElementById('sb-price').textContent=`Updated ${fmtTime(new Date())} (${updated} stocks)`;
-    document.getElementById('price-dot').style.background='var(--add2)';
-    document.getElementById('price-status').textContent=`Live prices: updated ${fmtTime(new Date())}`;
-    document.getElementById('src-last-price').textContent=`Last refreshed: ${fmtTime(new Date())}`;
-    return true;
-  }catch(e){
-    console.warn('Price fetch failed:',e);
-    document.getElementById('sb-price-dot').style.background='var(--rem2)';
-    document.getElementById('sb-price').textContent=`Fetch failed — retrying in 60s`;
-    return false;
+async function doFetch(){
+  setFetching(true);
+  const btn=document.getElementById('fetch-btn');
+  btn.textContent='Fetching...';btn.style.opacity='.5';btn.style.pointerEvents='none';
+
+  // Split universe into batches of 80 (Yahoo v7 limit is ~100 symbols)
+  const tickers=UNI.map(u=>u[0]);
+  const BSIZ=80;
+  let done=0;
+  for(let i=0;i<tickers.length;i+=BSIZ){
+    const batch=tickers.slice(i,i+BSIZ);
+    const symbols=batch.map(t=>t+'.AX').join(',');
+    const url=`https://query2.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketPreviousClose,regularMarketChangePercent,marketCap,sharesOutstanding,floatShares,averageDailyVolume3Month,shortName`;
+    try{
+      const data=await fetchProxy(url);
+      const quotes=data?.quoteResponse?.result||[];
+      for(const q of quotes){
+        const tkr=q.symbol.replace('.AX','');
+        const uEntry=UNI.find(u=>u[0]===tkr);
+        const iwfOverride=uEntry?.[3];
+        const shares=q.sharesOutstanding||0;
+        const floatSh=q.floatShares||shares;
+        const iwf=iwfOverride!==null&&iwfOverride!==undefined?iwfOverride:shares?Math.min(floatSh/shares,1.0):1.0;
+        const mktCap=(q.marketCap||0)/1e6; // A$m
+        const floatCap=mktCap*iwf;
+        const price=q.regularMarketPrice||0;
+        const avgVol=q.averageDailyVolume3Month||0;
+        const mdvt=price*avgVol/1e6; // A$m/day
+        G.stocks[tkr]={
+          mktCap,floatCap,price,
+          prevClose:q.regularMarketPreviousClose||price,
+          chgPct:q.regularMarketChangePercent||0,
+          sharesM:+(shares/1e6).toFixed(2),
+          floatM:+(floatSh/1e6).toFixed(2),
+          iwf:+iwf.toFixed(4),
+          avgVol,mdvtAdm:+mdvt.toFixed(3),
+          name:q.shortName||tkr,
+          rl:0,rank:{},
+        };
+      }
+    }catch(e){console.warn('Batch fetch failed',e);}
+    done+=batch.length;
+    setProgress(done/tickers.length*100);
+    if(i+BSIZ<tickers.length)await new Promise(res=>setTimeout(res,300));
+  }
+
+  // Calculate relative liquidity & ranks
+  calcRL();
+  assignRanks();
+  G.lastFetch=Date.now();
+  G.fetchCount++;
+  setFetching(false);
+  btn.textContent='↺ Fetch Live';btn.style.opacity='';btn.style.pointerEvents='';
+  renderAll();
+  updateLiveBadge();
+  saveCache();
+}
+
+function calcRL(){
+  const stks=Object.values(G.stocks).filter(s=>s.floatCap>0);
+  // stock median liquidity = mdvt / floatCap
+  for(const s of stks)s._sml=s.floatCap>0?s.mdvtAdm/s.floatCap:0;
+  const total=stks.reduce((a,s)=>a+s.floatCap,0);
+  const mktLiq=total>0?stks.reduce((a,s)=>a+s._sml*(s.floatCap/total),0):0;
+  for(const s of stks){
+    s.rl=mktLiq>0?+(s._sml/mktLiq*100).toFixed(1):0;
+    s.rlFlag=s.rl<15?'b300':s.rl<25?'b200':s.rl<30?'r300':s.rl<40?'r200':s.rl<50?'m200':'ok';
   }
 }
 
-function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function assignRanks(){
+  // Sort by floatCap descending
+  const sorted=Object.keys(G.stocks)
+    .filter(t=>G.stocks[t].floatCap>0)
+    .sort((a,b)=>G.stocks[b].floatCap-G.stocks[a].floatCap);
+  G.ranked=sorted;
+  for(const idx of['20','50','100','200','300']){
+    const minRL=RL_MIN[idx];
+    let r=1;
+    for(const t of sorted){
+      const s=G.stocks[t];
+      if(s.rl>=minRL){s.rank[idx]=r++;}
+      else{s.rank[idx]=null;}
+    }
+  }
+}
 
 // ════════════════════════════════════════════════════════════════════════════
-// CALCULATIONS
+// CLASSIFY
 // ════════════════════════════════════════════════════════════════════════════
-function getStock(s){
-  // Merge seed data with live prices
-  const live=G.stocks[s.t]||{};
-  return{
-    ticker:s.t, company:s.co, currentIndex:s.ci, maFlag:s.ma,
-    sector:s.sec||'',
-    avgFmc3m:s.fmc,     // A$m from seed
-    rank3m:s.rank,       // from seed
-    rl:s.rl,             // from seed
-    mdvtAdm:s.mdvt,      // from seed
-    expSharesM:s.exp,
-    chance:s.ch,
-    iwf:s.iwf||1.0,
-    sharesM:s.sh,
-    removal:s.removal||false,
-    // Live price (falls back to implied from seed FMC if not yet fetched)
-    curPrice: live.curPrice || (s.fmc*1e6/(s.sh*1e6*s.iwf)),
-    prevClose: live.prevClose||null,
-    chgPct: live.chgPct||null,
-    // Price history not available from seed — use simplified PTI
-    hasPH: false,
-  };
-}
-
-function calcPTI(stock){
-  const d=G.dates;
-  if(!d.remaining||!d.total)return null;
-  // Target FMC = seed FMC of the stock at the add buffer rank for this index
-  // We use the stock's own seed FMC as the threshold proxy
-  // (accurate when loaded from JSON; approximation with seed data)
-  const targetFmc=stock.avgFmc3m; // The candidate's own FMC IS near the threshold
-  const sh=stock.sharesM*1e6;
-  const iwf=stock.iwf;
-  const cur=stock.curPrice;
-  if(!sh||!iwf||!cur)return null;
-  // Simplified PTI: what price does it need to average over remaining days
-  // given it's been averaging ~avgFmc3m/sharesM/iwf so far
-  const impliedAvgSoFar=stock.avgFmc3m*1e6/(sh*iwf);
-  const fmcAccum=impliedAvgSoFar*sh*iwf/1e6*d.elapsed;
-  const reqFmcTotal=targetFmc*d.total;
-  const reqRemFmc=reqFmcTotal-fmcAccum;
-  const reqDailyFmc=reqRemFmc/d.remaining;
-  const reqPrice=reqDailyFmc/(sh*iwf/1e6);
-  const pctMove=cur>0?(reqPrice-cur)/cur*100:null;
-  return{reqPrice:+reqPrice.toFixed(3),pctMove:pctMove?+pctMove.toFixed(1):null};
-}
-
-function calcFlow(stock,idx){
-  const aumBn=parseFloat(document.getElementById(`aum${idx}`)?.value||AUM_DEF[idx]);
-  const aum=aumBn*1e9;
-  // Use seed-based FMC sum for the index
-  const idxStocks=SEED.filter(s=>{
-    const ci=parseInt(s.ci||'9999');
-    const ii=parseInt(idx);
-    return ci>0&&ci<=ii&&ci!==9999;
-  });
-  const idxFmc=idxStocks.reduce((a,s)=>a+s.fmc,0)*1e6;
-  if(!idxFmc||!stock.avgFmc3m||!stock.curPrice)return{sharesM:0,adm:0,dtc:0};
-  const w=(stock.avgFmc3m*1e6)/idxFmc;
-  const pSh=w*aum/stock.curPrice;
-  const pAdm=pSh*stock.curPrice;
-  const dtc=stock.mdvtAdm>0?pAdm/(stock.mdvtAdm*1e6):0;
-  return{sharesM:+(pSh/1e6).toFixed(3),adm:+(pAdm/1e6).toFixed(1),dtc:+dtc.toFixed(1)};
-}
-
-function classify(s,idx){
+function classify(ticker,idx){
+  const s=G.stocks[ticker];
+  if(!s||!s.floatCap)return null;
+  const uEntry=UNI.find(u=>u[0]===ticker);
+  if(!uEntry)return null;
+  const maFlag=uEntry[4];
+  const rank=s.rank[idx];
   const buf=BUFFERS[idx];
-  const rl=s.rl;
-  const inIdx=isInIdx(s,idx);
-  if(s.removal){
-    // removal candidate
-    if(s.chance==='Probable')return 'strong_rem';
-    if(s.chance==='Possible')return 'poss_rem';
-    return 'watch_rem';
+  const inIdx=isInIdx(uEntry[2],idx);
+  // M&A targets can't be added
+  if(maFlag&&!inIdx)return null;
+  // Liquidity removal check
+  if(inIdx&&s.rl<RL_REM[idx])return'liq_rem';
+  if(!rank)return null;
+  if(!inIdx){
+    if(rank<=buf.add)return'strong_add';
+    if(rank<=buf.add+25)return'poss_add';
+    if(rank<=buf.add+50)return'watch_add';
+    return null;
   } else {
-    if(s.chance==='Probable')return 'strong_add';
-    if(s.chance==='Possible')return 'poss_add';
-    if(s.chance==='Unlikely')return 'watch_add';
+    if(rank>=buf.del)return'strong_rem';
+    if(rank>=buf.del-25)return'poss_rem';
+    if(rank>=buf.del-50)return'watch_rem';
     return null;
   }
 }
 
-function getIndexForSeed(s){
-  // Determine which index section this seed entry belongs to
-  // based on its rank and buffer thresholds
-  if(s.rank<=BUFFERS['20'].del+10||s.rank<=BUFFERS['20'].add+10)return'20';
-  if(s.rank<=BUFFERS['50'].del+10)return'50';
-  if(s.rank<=BUFFERS['100'].del+10)return'100';
-  if(s.rank<=BUFFERS['200'].del+10)return'200';
-  return'300';
+function isInIdx(ci,idx){
+  const ci2=parseInt(ci||'9999');
+  const ii=parseInt(idx);
+  return ci2>0&&ci2<=ii&&ci2!==9999;
 }
 
-function isInIdx(s,idx){
-  const ci=parseInt(s.currentIndex||'9999');
-  const ii=parseInt(idx);
-  return ci>0&&ci<=ii&&ci!==9999;
+function getCandidates(idx,removal){
+  return UNI.filter(u=>{
+    const cl=classify(u[0],idx);
+    if(!cl)return false;
+    return removal?(cl.includes('rem')||cl==='liq_rem'):cl.includes('add');
+  }).sort((a,b)=>{
+    const ra=G.stocks[a[0]]?.rank[idx]||9999;
+    const rb=G.stocks[b[0]]?.rank[idx]||9999;
+    return removal?rb-ra:ra-rb;
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CALCULATIONS
+// ════════════════════════════════════════════════════════════════════════════
+function calcPTI(ticker,idx){
+  const s=G.stocks[ticker];
+  if(!s||!s.price||!s.sharesM)return null;
+  const d=G.dates;
+  if(!d.remaining||!d.total)return null;
+  // Target FMC = floatCap of the stock currently at the add buffer rank
+  const buf=BUFFERS[idx];
+  const sorted=Object.keys(G.stocks).filter(t=>G.stocks[t].rank[idx]).sort((a,b)=>G.stocks[a].rank[idx]-G.stocks[b].rank[idx]);
+  const borderStock=sorted[buf.add-1];
+  if(!borderStock)return null;
+  const targetFmc=G.stocks[borderStock].floatCap;
+  // Since we don't have 3m history, use simplified:
+  // Assume stock has been averaging its current floatCap throughout reference period
+  // PTI = what price needed to average to match targetFmc over remaining days
+  // given current price for elapsed days
+  const curFmc=s.floatCap;
+  const fmcAccum=curFmc*d.elapsed; // simplified: assumes current fmc held for elapsed days
+  const reqFmcTotal=targetFmc*d.total;
+  const reqRemFmc=reqFmcTotal-fmcAccum;
+  const reqDailyFmc=reqRemFmc/d.remaining;
+  const reqPrice=reqDailyFmc/((s.sharesM*1e6*s.iwf)/1e6);
+  if(reqPrice<=0)return null;
+  const pctMove=s.price>0?(reqPrice-s.price)/s.price*100:null;
+  return{reqPrice:+reqPrice.toFixed(3),pctMove:pctMove?+pctMove.toFixed(1):null,targetFmc,borderStock};
+}
+
+function calcFlow(ticker,idx){
+  const s=G.stocks[ticker];
+  if(!s||!s.price)return{sharesM:0,adm:0,dtc:0};
+  const aumBn=parseFloat(document.getElementById(`aum${idx}`)?.value||AUM_DEF[idx]);
+  const aum=aumBn*1e9;
+  const idxFmc=G.ranked.filter(t=>{const u=UNI.find(x=>x[0]===t);return u&&isInIdx(u[2],idx);})
+    .reduce((a,t)=>a+(G.stocks[t]?.floatCap||0),0)*1e6;
+  if(!idxFmc||!s.floatCap)return{sharesM:0,adm:0,dtc:0};
+  const w=(s.floatCap*1e6)/idxFmc;
+  const pSh=w*aum/s.price;
+  const pAdm=pSh*s.price;
+  const dtc=s.mdvtAdm>0?pAdm/(s.mdvtAdm*1e6):0;
+  return{sharesM:+(pSh/1e6).toFixed(3),adm:+(pAdm/1e6).toFixed(1),dtc:+dtc.toFixed(1)};
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -654,46 +798,6 @@ function renderAll(){
   renderTL();
   renderAssm();
   for(const idx of['300','200','100','50','20'])renderIndex(idx);
-  updateLiveBadge();
-}
-
-function recalcAll(){
-  updateCards();
-  for(const idx of['300','200','100','50','20']){
-    const addT=document.getElementById(`add-${idx}`);
-    const remT=document.getElementById(`rem-${idx}`);
-    if(!addT)continue;
-    const adds=getSeedForIdx(idx,false);
-    const rems=getSeedForIdx(idx,true);
-    addT.innerHTML=adds.length?adds.map(s=>rowHTML(s,idx)).join(''):empRow();
-    remT.innerHTML=rems.length?rems.map(s=>rowHTML(s,idx)).join(''):empRow();
-  }
-  updateLiveBadge();
-  document.getElementById('last-upd').textContent=G.lastLive?fmtTime(new Date(G.lastLive)):'—';
-}
-
-function getSeedForIdx(idx,removal){
-  return SEED.filter(s=>s.removal===removal&&matchesIdx(s,idx))
-    .sort((a,b)=>removal?b.rank-a.rank:a.rank-b.rank);
-}
-
-function matchesIdx(s,idx){
-  // Determine which index table this entry belongs to
-  const buf=BUFFERS[idx];
-  const ii=parseInt(idx);
-  if(s.removal){
-    // Show in the index where it's currently a member AND failing
-    const ci=parseInt(s.ci||'9999');
-    return ci===ii;
-  } else {
-    // Show in the index where it's approaching
-    if(idx==='300')return s.rank>=BUFFERS['200'].del&&s.rank<=BUFFERS['300'].del+50;
-    if(idx==='200')return s.rank>=BUFFERS['100'].del&&s.rank<=BUFFERS['200'].del+30;
-    if(idx==='100')return s.rank>=BUFFERS['50'].del&&s.rank<=BUFFERS['100'].del+20;
-    if(idx==='50')return s.rank>=BUFFERS['20'].del&&s.rank<=BUFFERS['50'].del+15;
-    if(idx==='20')return s.rank<=BUFFERS['20'].del+10;
-  }
-  return false;
 }
 
 function updateHeader(){
@@ -707,40 +811,41 @@ function updateHeader(){
 }
 
 function updateCards(){
+  if(!G.lastFetch){
+    ['cnt-a','cnt-r','cnt-w','cnt-stk','cnt-300'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('last-upd').textContent='—';
+    return;
+  }
   let sa=0,sr=0,wa=0;
-  SEED.forEach(s=>{
-    if(!s.removal&&s.chance==='Probable')sa++;
-    else if(s.removal&&s.chance==='Probable')sr++;
-    else if(s.chance==='Possible')wa++;
-  });
-  const cnt300=SEED.filter(s=>!s.removal&&(s.ci==='300'||s.ci==='200'||s.ci==='100'||s.ci==='50'||s.ci==='20')).length+
-    SEED.filter(s=>s.removal&&(s.ci==='300')).length;
+  for(const idx of['20','50','100','200','300']){
+    for(const u of UNI){
+      const cl=classify(u[0],idx);
+      if(cl==='strong_add')sa++;
+      else if(cl==='strong_rem'||cl==='liq_rem')sr++;
+      else if(cl?.includes('poss'))wa++;
+    }
+  }
+  const cnt300=UNI.filter(u=>isInIdx(u[2],'300')).length;
   document.getElementById('cnt-a').textContent=sa;
   document.getElementById('cnt-r').textContent=sr;
   document.getElementById('cnt-w').textContent=wa;
-  document.getElementById('cnt-300').textContent='~294';
-  document.getElementById('cnt-300-s').textContent='target 300 → +6 needed';
-  document.getElementById('last-upd').textContent=G.lastLive?fmtTime(new Date(G.lastLive)):'—';
+  document.getElementById('cnt-stk').textContent=Object.keys(G.stocks).length;
+  document.getElementById('cnt-300').textContent=cnt300;
+  document.getElementById('cnt-300s').textContent=cnt300<300?`target 300 → +${300-cnt300} needed`:'at target: 300';
+  document.getElementById('last-upd').textContent=G.lastFetch?fmtTime(new Date(G.lastFetch)):'—';
 }
 
 function renderTL(){
   const d=G.dates;
-  const nodes=[
-    {date:d.refStart,lbl:'Ref Start',type:'done'},
-    {date:new Date(),lbl:'Today',type:'now'},
-    {date:d.refEnd,lbl:'Ref Date',type:new Date()>d.refEnd?'done':'future'},
-    {date:d.annDate,lbl:'Announced',type:'future'},
-    {date:d.effDate,lbl:'Effective',type:'future'},
-  ].sort((a,b)=>a.date-b.date);
+  const nodes=[{date:d.refStart,l:'Ref Start',t:'done'},{date:new Date(),l:'Today',t:'now'},{date:d.refEnd,l:'Ref Date',t:new Date()>d.refEnd?'done':'future'},{date:d.annDate,l:'Announced',t:'future'},{date:d.effDate,l:'Effective',t:'future'}].sort((a,b)=>a.date-b.date);
   const span=d.effDate-d.refStart;
   const tp=Math.min(100,(new Date()-d.refStart)/span*100);
   const tl=document.getElementById('tl');
   tl.innerHTML=`<div class="tl-track"></div><div class="tl-fill" style="width:${tp.toFixed(1)}%"></div>`;
   nodes.forEach(n=>{
     const pct=Math.min(100,(n.date-d.refStart)/span*100);
-    const el=document.createElement('div');
-    el.className='tl-n';el.style.left=pct.toFixed(1)+'%';
-    el.innerHTML=`<div class="tl-pip ${n.type}"></div><div class="tl-txt">${n.lbl}<b>${fmtDate(n.date)}</b></div>`;
+    const el=document.createElement('div');el.className='tl-n';el.style.left=pct.toFixed(1)+'%';
+    el.innerHTML=`<div class="tl-pip ${n.t}"></div><div class="tl-txt">${n.l}<b>${fmtDate(n.date)}</b></div>`;
     tl.appendChild(el);
   });
 }
@@ -748,16 +853,17 @@ function renderTL(){
 function renderAssm(){
   const d=G.dates;
   document.getElementById('a-period').textContent=
-    `${fmtDate(d.refStart)} → ${fmtDate(d.refEnd)} · ${d.elapsed}/${d.total} days (${d.pct}% · ${d.remaining} remaining)`;
+    `Ref ${fmtDate(d.refStart)}→${fmtDate(d.refEnd)} · ${d.elapsed}/${d.total} trading days (${d.pct}% · ${d.remaining} remaining)`;
 }
 
 function renderIndex(idx){
+  const adds=getCandidates(idx,false);
+  const rems=getCandidates(idx,true);
   const buf=BUFFERS[idx];
   const freq=idx==='300'?'Semi-annual':'Quarterly';
-  const adds=getSeedForIdx(idx,false);
-  const rems=getSeedForIdx(idx,true);
-  const sa=adds.filter(s=>s.chance==='Probable').length;
-  const sr=rems.filter(s=>s.chance==='Probable').length;
+  const sa=adds.filter(u=>classify(u[0],idx)==='strong_add').length;
+  const sr=rems.filter(u=>{const cl=classify(u[0],idx);return cl==='strong_rem'||cl==='liq_rem';}).length;
+  const noData=!G.lastFetch;
 
   document.getElementById(`idx-${idx}`).innerHTML=`
     <div>
@@ -765,9 +871,10 @@ function renderIndex(idx){
         <div class="idx-pill p${idx}">ASX ${idx}</div>
         <div class="ititle">S&P/ASX ${idx} — ${freq}</div>
         <div class="imeta">Add ≤${buf.add} · Del ≥${buf.del} · RL≥${RL_MIN[idx]}%</div>
-        <div class="ichips" id="chips-${idx}">
-          ${sa>0?`<span class="chip ch-a">+${sa} Probable</span>`:''}
-          ${sr>0?`<span class="chip ch-r">−${sr} Probable</span>`:''}
+        <div class="ichips">
+          ${sa>0?`<span class="chip ch-a">+${sa} Strong</span>`:''}
+          ${sr>0?`<span class="chip ch-r">−${sr} Strong</span>`:''}
+          ${noData?'<span class="chip" style="background:rgba(245,166,35,.1);color:var(--prob);border:1px solid var(--probbd);">↺ Fetch to populate</span>':''}
         </div>
         <span class="chev op" id="chev-${idx}">▼</span>
       </div>
@@ -776,15 +883,39 @@ function renderIndex(idx){
           <div class="tside">
             <div class="tside-hdr th-a">↑ &nbsp;Addition Candidates</div>
             <table>
-              <thead><tr><th>Status</th><th>Ticker</th><th>Company</th><th>3m Avg FMC</th><th>Rank</th><th>Live Price</th><th>RL%</th><th>MDVT</th><th>Flow A$m</th><th>DTC</th><th>Price to Include</th></tr></thead>
-              <tbody id="add-${idx}">${adds.length?adds.map(s=>rowHTML(s,idx)).join(''):empRow()}</tbody>
+              <thead><tr>
+                <th title="Probability of index change">Status</th>
+                <th title="ASX ticker code">Ticker</th>
+                <th title="Company name">Company</th>
+                <th title="Float-adjusted market cap — the ranking metric">FF Mkt Cap</th>
+                <th title="Current FMC rank among all eligible stocks">Rank</th>
+                <th title="Live price from Yahoo Finance (15-20 min delayed)">Live Price</th>
+                <th title="Relative Liquidity % — must be ≥50% for ASX200 entry">RL%</th>
+                <th title="Median Daily Value Traded in A$m">MDVT</th>
+                <th title="Estimated passive fund buying at rebalance">Flow A$m</th>
+                <th title="Days to Close — passive flow ÷ MDVT">DTC</th>
+                <th title="Average price needed over remaining ref period days to rank inside buffer">Price to Include</th>
+              </tr></thead>
+              <tbody>${noData?noDataRow():adds.length?adds.map(u=>rowHTML(u,idx,false)).join(''):empRow()}</tbody>
             </table>
           </div>
           <div class="tside">
             <div class="tside-hdr th-r">↓ &nbsp;Removal Candidates</div>
             <table>
-              <thead><tr><th>Status</th><th>Ticker</th><th>Company</th><th>3m Avg FMC</th><th>Rank</th><th>Live Price</th><th>RL%</th><th>MDVT</th><th>Flow A$m</th><th>DTC</th><th>Price to Excl.</th></tr></thead>
-              <tbody id="rem-${idx}">${rems.length?rems.map(s=>rowHTML(s,idx)).join(''):empRow()}</tbody>
+              <thead><tr>
+                <th title="Probability of index change">Status</th>
+                <th title="ASX ticker code">Ticker</th>
+                <th title="Company name">Company</th>
+                <th title="Float-adjusted market cap">FF Mkt Cap</th>
+                <th title="Current rank — higher = at more risk of removal">Rank</th>
+                <th title="Live price from Yahoo Finance">Live Price</th>
+                <th title="Relative Liquidity % — below 25% triggers removal from ASX200">RL%</th>
+                <th title="Median Daily Value Traded in A$m">MDVT</th>
+                <th title="Estimated passive fund selling at rebalance">Flow A$m</th>
+                <th title="Days to Close — how many days of avg volume the passive selling represents">DTC</th>
+                <th title="Price needs to rise above this to be safe from removal">Price to Safety</th>
+              </tr></thead>
+              <tbody>${noData?noDataRow():rems.length?rems.map(u=>rowHTML(u,idx,true)).join(''):empRow()}</tbody>
             </table>
           </div>
         </div>
@@ -792,38 +923,43 @@ function renderIndex(idx){
     </div>`;
 }
 
+function noDataRow(){return`<tr><td colspan="11" class="emp" style="padding:24px!important;">
+  <div style="font-size:11px;color:var(--t2);margin-bottom:6px;">No data yet — click <b style="color:var(--add2)">↺ Fetch Live</b> to load live market cap rankings</div>
+  <div style="font-size:9px;color:var(--t3);">This fetches current market caps for all ${UNI.length} tracked stocks via Yahoo Finance. Takes ~10-15 seconds.</div>
+</td></tr>`;}
 function empRow(){return`<tr><td colspan="11" class="emp">No candidates at current prices / rankings</td></tr>`;}
 
-function rowHTML(s,idx){
-  const st=getStock(s);
-  const cl=classify(s,idx);
-  const removal=s.removal;
-  const flow=calcFlow(st,idx);
-  const pti=!removal?calcPTI(st):null;
+function rowHTML(uEntry,idx,removal){
+  const ticker=uEntry[0],company=uEntry[1],ci=uEntry[2],maFlag=uEntry[4];
+  const s=G.stocks[ticker];
+  if(!s)return`<tr><td colspan="11" class="emp">${ticker} — data not available</td></tr>`;
+  const cl=classify(ticker,idx);
+  const rank=s.rank[idx];
+  const buf=BUFFERS[idx];
+  const flow=calcFlow(ticker,idx);
+  const pti=!removal?calcPTI(ticker,idx):null;
 
   // Status badge
   let bc,bl;
   if(cl==='strong_add'){bc='pb-sa';bl='⬆ STRONG';}
-  else if(cl==='strong_rem'){bc='pb-sr';bl='⬇ STRONG';}
+  else if(cl==='strong_rem'||cl==='liq_rem'){bc='pb-sr';bl='⬇ STRONG';}
   else if(cl?.includes('poss')){bc='pb-ps';bl='◆ POSS';}
   else{bc='pb-wt';bl='○ WATCH';}
 
   // Rank bar
-  const buf=BUFFERS[idx];
   const maxR=buf.del+60;
-  const rPct=Math.min(100,st.rank3m/maxR*100);
-  const inZ=removal?st.rank3m>=buf.del:st.rank3m<=buf.add;
+  const rPct=Math.min(100,(rank||0)/maxR*100);
+  const inZ=removal?rank>=buf.del:rank<=buf.add;
   const rfCls=inZ?(removal?'rf-out':'rf-in'):'rf-near';
   const rnCls=inZ?(removal?'nn':'np'):'nw';
 
   // Live price
-  const chg=st.chgPct;
-  const chgCls=chg===null?'':chg>=0?'lup':'ldn';
-  const chgStr=chg!==null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'';
+  const chgCls=s.chgPct>=0?'lup':'ldn';
+  const chgStr=(s.chgPct>=0?'+':'')+s.chgPct.toFixed(2)+'%';
 
   // RL
   const rlMin=RL_MIN[idx];
-  const rlCls=st.rl>=rlMin?'rl-ok':st.rl>=RL_REM[idx]?'rl-w':'rl-b';
+  const rlCls=s.rl>=rlMin?'rl-ok':s.rl>=RL_REM[idx]?'rl-w':'rl-b';
 
   // DTC
   const dtcCls=flow.dtc<1?'dtc-ok':flow.dtc<5?'dtc-m':'dtc-h';
@@ -838,134 +974,86 @@ function rowHTML(s,idx){
     ptiHTML=`<div class="pti ${pc}"><span class="pti-p">A$${pti.reqPrice}</span><br><span style="font-size:8px">${pmStr} from spot</span></div>`;
   }
 
-  const iwfTag=st.iwf<0.9?`<span class="iwft">IWF ${st.iwf}</span>`:'';
+  // Trend vs prev
+  const trendCls=s.chgPct>0.5?'trend-up':s.chgPct<-0.5?'trend-dn':'trend-fl';
+  const trendSym=s.chgPct>0.5?'▲':s.chgPct<-0.5?'▼':'—';
 
-  return`<tr onclick="togDet('${s.t}','${idx}','${removal?'r':'a'}')" id="row-${s.t}-${idx}-${removal?'r':'a'}">
+  return`<tr onclick="togDet('${ticker}','${idx}','${removal?'r':'a'}')" id="row-${ticker}-${idx}-${removal?'r':'a'}">
     <td><span class="pb ${bc}"><span class="bdot"></span>${bl}</span></td>
-    <td><span class="tkr">${s.t}</span>${s.ma?'<span class="matag">M&A</span>':''}${iwfTag}</td>
-    <td><span class="co" title="${s.co}">${s.co}</span></td>
-    <td class="nv">A$${s.fmc>=1000?(s.fmc/1000).toFixed(2)+'b':s.fmc+'m'}</td>
-    <td><div class="rg"><div class="rg-bar"><div class="rg-fill ${rfCls}" style="width:${rPct}%"></div></div><span class="rg-num ${rnCls}">${st.rank3m}</span></div></td>
-    <td><div class="lpx"><span class="lp-p">A$${st.curPrice?.toFixed(3)||'—'}</span><span class="lp-c ${chgCls}">${chgStr}</span></div></td>
-    <td class="${rlCls}">${st.rl}%</td>
-    <td class="nv">${st.mdvtAdm?.toFixed(2)}</td>
+    <td><span class="tkr">${ticker}</span>${maFlag?'<span class="matag">M&A</span>':''}</td>
+    <td><span class="co" title="${company}">${company}</span></td>
+    <td class="nv">A$${s.floatCap>=1000?(s.floatCap/1000).toFixed(2)+'b':s.floatCap.toFixed(0)+'m'}</td>
+    <td><div class="rg"><div class="rg-bar"><div class="rg-fill ${rfCls}" style="width:${rPct}%"></div></div><span class="rg-num ${rnCls}">${rank||'—'}</span></div></td>
+    <td><div class="lpx"><span class="lp-p ${s.chgPct>=0?'np':'nn'}">A$${s.price.toFixed(3)}</span><span class="lp-c ${chgCls}">${chgStr}</span></div></td>
+    <td class="${rlCls}">${s.rl}%</td>
+    <td class="nv">${s.mdvtAdm.toFixed(2)}</td>
     <td class="${fsgn}">${flow.adm>0?(removal?'−':'+')+'A$'+flow.adm+'m':'—'}</td>
     <td class="${dtcCls}">${flow.dtc>0?flow.dtc+'d':'—'}</td>
     <td>${ptiHTML}</td>
   </tr>
-  <tr id="det-${s.t}-${idx}-${removal?'r':'a'}" style="display:none;" class="det-row">
-    <td colspan="11">${detHTML(st,s,idx,removal)}</td>
+  <tr id="det-${ticker}-${idx}-${removal?'r':'a'}" style="display:none;" class="det-row">
+    <td colspan="11">${detHTML(ticker,uEntry,idx,removal,s,pti,flow)}</td>
   </tr>`;
 }
 
-function detHTML(st,s,idx,removal){
-  const pti=!removal?calcPTI(st):null;
-  const flow=calcFlow(st,idx);
+function detHTML(ticker,uEntry,idx,removal,s,pti,flow){
   const d=G.dates;
-  const implPx=s.fmc*1e6/(s.sh*1e6*s.iwf);
-  const fmcAcc=implPx*s.sh*1e6*s.iwf/1e6*d.elapsed;
+  const borderRank=!removal&&pti?pti.borderStock:'—';
+  const borderFmc=!removal&&pti?pti.targetFmc.toFixed(0):'—';
   const formula=pti?
-`targetFMC     = A$${s.fmc}m  (seed data from Canaccord 30 Mar 2026)
-sharesOnIssue = ${s.sh}m × IWF ${s.iwf}
-impliedAvgPx  = A$${implPx.toFixed(3)}  (FMC÷shares÷IWF)
-fmcAccumulated= A$${fmcAcc.toFixed(0)}m  (${d.elapsed} days × implied daily FMC)
-reqAvgPrice   = (${s.fmc}m × ${d.total} − fmcAccum) ÷ ${d.remaining} ÷ (shares×IWF)
-              = <span class="hlg">A$${pti.reqPrice}</span>  (${pti.pctMove!==null?(pti.pctMove>=0?'+':'')+pti.pctMove+'%':''} from spot A$${st.curPrice?.toFixed(3)})
-Note: PTI uses seed FMC as threshold proxy. Load JSON for precise calculation.`
-:'Removal candidate — price-to-exclude calculation not shown.';
-
-  const idxFmc=SEED.filter(s2=>{const ci=parseInt(s2.ci||'9999');const ii=parseInt(idx);return ci>0&&ci<=ii&&ci!==9999;}).reduce((a,s2)=>a+s2.fmc,0);
-  const wt=idxFmc>0?((s.fmc/idxFmc)*100).toFixed(3):0;
+`Target (border stock '${pti.borderStock}'): FF Mkt Cap = A$${pti.targetFmc.toFixed(0)}m
+Stock's current FF Mkt Cap = A$${s.floatCap.toFixed(0)}m
+Shares = ${s.sharesM}m × IWF ${s.iwf}
+Assumed avg FMC so far = A$${s.floatCap.toFixed(0)}m × ${d.elapsed} days = A$${(s.floatCap*d.elapsed).toFixed(0)}m
+Required remaining FMC = (${pti.targetFmc.toFixed(0)}m × ${d.total}) − accumulated
+Required avg daily FMC over ${d.remaining} remaining days
+→ Required avg price = <span class="hlg">A$${pti.reqPrice}</span>
+  (${pti.pctMove!==null?(pti.pctMove>=0?'+':'')+pti.pctMove+'%':''} from current A$${s.price.toFixed(3)})`
+:'Removal candidate — shows price needed to rank safely inside index.';
 
   return`<div class="det-panel">
     <div class="dp-col">
-      <div class="dp-hd">Stock Detail</div>
-      <div class="dp-r"><span class="dp-l">Sector</span><span class="dp-v">${s.sec||'—'}</span></div>
-      <div class="dp-r"><span class="dp-l">Shares on issue</span><span class="dp-v">${s.sh}m</span></div>
-      <div class="dp-r"><span class="dp-l">IWF</span><span class="dp-v">${s.iwf} ${s.iwf<0.9?'<span style="color:var(--prob)">(override)</span>':''}</span></div>
-      <div class="dp-r"><span class="dp-l">3m Avg FMC</span><span class="dp-v">A$${s.fmc}m <span style="color:var(--t3)">(seed)</span></span></div>
-      <div class="dp-r"><span class="dp-l">Rank</span><span class="dp-v">${s.rank} vs buf ${BUFFERS[idx][removal?'del':'add']}</span></div>
-      <div class="dp-r"><span class="dp-l">Rel. Liquidity</span><span class="dp-v ${s.rl>=RL_MIN[idx]?'np':'nn'}">${s.rl}%</span></div>
-      <div class="dp-r"><span class="dp-l">MDVT</span><span class="dp-v">A$${s.mdvt}m/day</span></div>
-      <div class="dp-r"><span class="dp-l">Live price</span><span class="dp-v">A$${st.curPrice?.toFixed(4)||'—'}</span></div>
-      <div class="dp-r"><span class="dp-l">Canaccord prob.</span><span class="dp-v" style="color:var(--prob)">${s.ch}</span></div>
-      <div class="dp-r"><span class="dp-l">Exp. passive sh.</span><span class="dp-v">${s.exp}m</span></div>
+      <div class="dp-hd">Stock Data</div>
+      <div class="dp-r"><span class="dp-l">Live price</span><span class="dp-v ${s.chgPct>=0?'np':'nn'}">A$${s.price.toFixed(4)}</span></div>
+      <div class="dp-r"><span class="dp-l">Today's change</span><span class="dp-v ${s.chgPct>=0?'np':'nn'}">${(s.chgPct>=0?'+':'')+s.chgPct.toFixed(2)}%</span></div>
+      <div class="dp-r"><span class="dp-l">FF Mkt Cap (live)</span><span class="dp-v">A$${s.floatCap.toFixed(0)}m</span></div>
+      <div class="dp-r"><span class="dp-l">Total Mkt Cap</span><span class="dp-v">A$${s.mktCap.toFixed(0)}m</span></div>
+      <div class="dp-r"><span class="dp-l">Shares on issue</span><span class="dp-v">${s.sharesM}m</span></div>
+      <div class="dp-r"><span class="dp-l">Float shares</span><span class="dp-v">${s.floatM}m</span></div>
+      <div class="dp-r"><span class="dp-l">IWF (estimated)</span><span class="dp-v">${s.iwf}${s.iwf<0.9?' ⚠ override':''}</span></div>
+      <div class="dp-r"><span class="dp-l">Rank (ASX ${idx})</span><span class="dp-v">${s.rank[idx]||'ineligible'} of ${Object.keys(G.stocks).length}</span></div>
+      <div class="dp-r"><span class="dp-l">Rel. Liquidity</span><span class="dp-v ${s.rl>=(RL_MIN[idx]||50)?'np':'nn'}">${s.rl}% ${s.rl<(RL_MIN[idx]||50)?'⚠ below threshold':''}</span></div>
+      <div class="dp-r"><span class="dp-l">MDVT</span><span class="dp-v">A$${s.mdvtAdm.toFixed(3)}m/day</span></div>
+      <div class="dp-r"><span class="dp-l">Current index</span><span class="dp-v">ASX ${uEntry[2]||'none'}</span></div>
     </div>
     <div class="dp-col">
-      <div class="dp-hd">Price to ${removal?'Exclude':'Include'}</div>
+      <div class="dp-hd">Price to ${removal?'Safety (avoid removal)':'Include'}</div>
       <div class="formula">${formula}</div>
-      <div class="dp-hd" style="margin-top:10px;">Passive Flow ASX ${idx}</div>
-      <div class="dp-r"><span class="dp-l">Index weight</span><span class="dp-v">${wt}%</span></div>
+      <div class="dp-hd" style="margin-top:10px;">Passive Flow — ASX ${idx}</div>
       <div class="dp-r"><span class="dp-l">Passive AUM</span><span class="dp-v">A$${parseFloat(document.getElementById('aum'+idx)?.value||AUM_DEF[idx])}bn</span></div>
-      <div class="dp-r"><span class="dp-l">Est. passive sh.</span><span class="dp-v">${flow.sharesM}m</span></div>
+      <div class="dp-r"><span class="dp-l">Est. passive shares</span><span class="dp-v">${flow.sharesM}m</span></div>
       <div class="dp-r"><span class="dp-l">Est. A$ flow</span><span class="dp-v ${removal?'nn':'np'}">${removal?'−':'+'}A$${flow.adm}m</span></div>
-      <div class="dp-r"><span class="dp-l">DTC</span><span class="dp-v">${flow.dtc}d</span></div>
+      <div class="dp-r"><span class="dp-l">DTC</span><span class="dp-v ${flow.dtc<1?'np':flow.dtc<5?'nw':'nn'}">${flow.dtc} days</span></div>
+      <div style="margin-top:8px;font-size:8px;color:var(--t3)">DTC &lt;1 = easily absorbed · 1–5 = moderate · &gt;5 = high market impact</div>
     </div>
     <div class="dp-col">
-      <div class="dp-hd">Scenario — Override Price</div>
-      <div class="sl-row">
-        <span class="sl-l">Spot price</span>
-        <input type="range" min="${((st.curPrice||1)*0.5).toFixed(2)}" max="${((st.curPrice||1)*2).toFixed(2)}" step="0.01"
-          value="${st.curPrice?.toFixed(2)||0}"
-          oninput="overridePrice('${s.t}',this.value,'${idx}','${removal?'r':'a'}')">
-        <span class="sl-v" id="slv-${s.t}-${idx}">A$${st.curPrice?.toFixed(2)||'?'}</span>
-      </div>
+      <div class="dp-hd">Buffer Position</div>
+      <div class="dp-r"><span class="dp-l">Current rank</span><span class="dp-v">${s.rank[idx]||'—'}</span></div>
+      <div class="dp-r"><span class="dp-l">Add buffer</span><span class="dp-v">≤ rank ${BUFFERS[idx].add}</span></div>
+      <div class="dp-r"><span class="dp-l">Del buffer</span><span class="dp-v">≥ rank ${BUFFERS[idx].del}</span></div>
+      <div class="dp-r"><span class="dp-l">Gap to add buffer</span><span class="dp-v ${(s.rank[idx]||999)<=BUFFERS[idx].add?'np':'nw'}">${Math.max(0,(s.rank[idx]||999)-BUFFERS[idx].add)} ranks</span></div>
+      <div class="dp-r"><span class="dp-l">Gap to del buffer</span><span class="dp-v ${(s.rank[idx]||0)>=BUFFERS[idx].del?'nn':'np'}">${Math.max(0,BUFFERS[idx].del-(s.rank[idx]||0))} ranks</span></div>
       <div class="dp-hd" style="margin-top:10px;">Notes</div>
-      <textarea class="notes-ta" id="notes-${s.t}"
-        placeholder="Analyst notes for ${s.t}...">${localStorage.getItem('note_'+s.t)||''}</textarea>
-      <button onclick="saveNote('${s.t}')" style="margin-top:4px;font-size:8px;padding:3px 8px;background:var(--b1);border:1px solid var(--b2);color:var(--t2);border-radius:3px;cursor:pointer;">Save note</button>
-      <div class="dp-hd" style="margin-top:10px;">Data Source</div>
-      <div class="dp-r"><span class="dp-l">FMC/Rank</span><span class="dp-v" style="color:var(--t3)">Canaccord 30 Mar 2026</span></div>
-      <div class="dp-r"><span class="dp-l">Price</span><span class="dp-v" style="color:${G.lastLive?'var(--add2)':'var(--t3)'}">${G.lastLive?'Yahoo Finance (live)':'Not yet fetched'}</span></div>
-      <div class="dp-r"><span class="dp-l">For full data</span><span class="dp-v" style="color:var(--t3)">Load JSON from Python</span></div>
+      <textarea class="notes-ta" id="notes-${ticker}" placeholder="Notes for ${ticker}...">${localStorage.getItem('note_'+ticker)||''}</textarea>
+      <button onclick="localStorage.setItem('note_${ticker}',document.getElementById('notes-${ticker}').value)" style="margin-top:4px;font-size:8px;padding:3px 8px;background:var(--b1);border:1px solid var(--b2);color:var(--t2);border-radius:3px;cursor:pointer;">Save note</button>
     </div>
   </div>`;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// JSON LOAD (from Python fetcher)
+// UI INTERACTIONS
 // ════════════════════════════════════════════════════════════════════════════
-function loadJSON(evt){
-  const file=evt.target.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const data=JSON.parse(e.target.result);
-      if(!data.stocks||!Array.isArray(data.stocks)){alert('Invalid file');return;}
-      // Replace SEED with loaded data
-      SEED.length=0;
-      for(const s of data.stocks){
-        SEED.push({
-          t:s.ticker, co:s.company||s.ticker, ci:s.current_index||'none',
-          ma:s.ma_flag||false, fmc:s.avg_fmc_3m_m||0, rank:s.rank_3m||999,
-          rl:s.relative_liquidity_pct||0, mdvt:s.mdvt_adm||0,
-          exp:s.exp_shares_m||0, ch:s.chance||'Watch',
-          iwf:s.iwf_estimated||1.0, sh:s.shares_outstanding_m||0,
-          sec:s.sector||'', removal:s.rank_3m>=221&&s.current_index!=='none',
-        });
-      }
-      // Update live prices from JSON
-      for(const s of data.stocks){
-        G.stocks[s.ticker]={curPrice:s.current_price,prevClose:null,chgPct:null};
-      }
-      G.lastLive=Date.now();
-      document.getElementById('sb-source').textContent=`Python fetcher JSON — ${data.stocks.length} stocks — ${file.name}`;
-      renderAll();
-      scheduleTimers();
-      alert(`✓ Loaded ${data.stocks.length} stocks from ${file.name}`);
-    }catch(err){alert('Error: '+err.message);}
-  };
-  reader.readAsText(file);
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// INTERACTIONS
-// ════════════════════════════════════════════════════════════════════════════
-function togIdx(idx){
-  document.getElementById(`tbl-${idx}`)?.classList.toggle('op');
-  document.getElementById(`chev-${idx}`)?.classList.toggle('op');
-}
+function togIdx(idx){document.getElementById(`tbl-${idx}`)?.classList.toggle('op');document.getElementById(`chev-${idx}`)?.classList.toggle('op');}
 function togDet(tkr,idx,side){
   const det=document.getElementById(`det-${tkr}-${idx}-${side}`);
   const row=document.getElementById(`row-${tkr}-${idx}-${side}`);
@@ -977,53 +1065,67 @@ function togDet(tkr,idx,side){
 function setView(v,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   el.classList.add('on');
-  const ids=['300','200','100','50','20'];
-  ids.forEach(i=>{document.getElementById(`idx-${i}`).style.display=(v==='all'||v===i)?'':'none';});
-  document.getElementById('src-view').style.display=v==='src'?'':'none';
+  ['300','200','100','50','20'].forEach(i=>{document.getElementById(`idx-${i}`).style.display=(v==='all'||v===i)?'':'none';});
+  document.getElementById('cs-view').style.display=v==='cs'?'':'none';
 }
-function recalcAll(){
-  updateCards();
-  for(const idx of['300','200','100','50','20']){
-    const addT=document.getElementById(`add-${idx}`);
-    const remT=document.getElementById(`rem-${idx}`);
-    if(!addT)continue;
-    const adds=getSeedForIdx(idx,false);
-    const rems=getSeedForIdx(idx,true);
-    addT.innerHTML=adds.length?adds.map(s=>rowHTML(s,idx)).join(''):empRow();
-    remT.innerHTML=rems.length?rems.map(s=>rowHTML(s,idx)).join(''):empRow();
-  }
-  updateLiveBadge();
-  document.getElementById('last-upd').textContent=G.lastLive?fmtTime(new Date(G.lastLive)):'—';
+function setFetching(on){
+  const bar=document.getElementById('fetch-bar');
+  bar.classList.toggle('show',on);
+  if(!on){document.getElementById('fetch-fill').style.width='100%';setTimeout(()=>{document.getElementById('fetch-fill').style.width='0%';bar.classList.remove('show');},500);}
 }
-function overridePrice(tkr,val,idx,side){
-  if(!G.stocks[tkr])G.stocks[tkr]={};
-  G.stocks[tkr].curPrice=parseFloat(val);
-  document.getElementById(`slv-${tkr}-${idx}`).textContent='A$'+parseFloat(val).toFixed(2);
-  // Re-render just the affected rows
-  const addT=document.getElementById(`add-${idx}`);
-  const remT=document.getElementById(`rem-${idx}`);
-  if(addT){const adds=getSeedForIdx(idx,false);addT.innerHTML=adds.length?adds.map(s=>rowHTML(s,idx)).join(''):empRow();}
-  if(remT){const rems=getSeedForIdx(idx,true);remT.innerHTML=rems.length?rems.map(s=>rowHTML(s,idx)).join(''):empRow();}
-}
-function saveNote(t){localStorage.setItem('note_'+t,document.getElementById('notes-'+t)?.value||'');}
+function setProgress(pct){document.getElementById('fetch-fill').style.width=pct+'%';}
 function updateLiveBadge(){
-  const badge=document.getElementById('live-badge');
-  const txt=document.getElementById('live-txt');
-  const dot=document.getElementById('live-dot');
-  const age=Date.now()-G.lastLive;
-  if(G.lastLive&&age<90000){badge.className='lbadge lb-live';txt.textContent='Live · '+fmtTime(new Date(G.lastLive));dot.classList.add('pulse');}
-  else if(G.lastLive&&age<600000){badge.className='lbadge lb-stale';txt.textContent='Stale · '+Math.round(age/60000)+'m ago';dot.classList.remove('pulse');}
-  else{badge.className='lbadge lb-stale';txt.textContent='Fetching prices...';dot.classList.remove('pulse');}
+  const b=document.getElementById('live-badge'),t=document.getElementById('live-txt'),d=document.getElementById('live-dot');
+  const age=Date.now()-G.lastFetch;
+  if(!G.lastFetch){b.className='lbadge lb-fetch';t.textContent='Click ↺ Fetch Live';d.classList.remove('pulse');}
+  else if(age<90000){b.className='lbadge lb-live';t.textContent='Live · '+fmtTime(new Date(G.lastFetch));d.classList.add('pulse');}
+  else{b.className='lbadge lb-fetch';t.textContent='Stale · '+Math.round(age/60000)+'m ago';d.classList.remove('pulse');}
 }
-async function refreshPrices(){
-  document.getElementById('live-txt').textContent='Refreshing...';
-  await fetchLivePrices();
-  recalcAll();
+
+// ════════════════════════════════════════════════════════════════════════════
+// JSON LOAD (Python fetcher output)
+// ════════════════════════════════════════════════════════════════════════════
+function loadJSON(evt){
+  const file=evt.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.stocks)return alert('Invalid file');
+      for(const s of data.stocks){
+        const u=UNI.find(x=>x[0]===s.ticker);
+        const iwfOverride=u?.[3];
+        const sharesRaw=(s.shares_outstanding_m||0)*1e6;
+        const floatRaw=(s.float_shares_m||0)*1e6;
+        const iwf=iwfOverride!==null&&iwfOverride!==undefined?iwfOverride:sharesRaw?Math.min(floatRaw/sharesRaw,1.0):1.0;
+        const price=s.current_price||0;
+        const floatCap=s.avg_fmc_3m_m||0;
+        G.stocks[s.ticker]={
+          mktCap:floatCap/iwf,floatCap,price,
+          prevClose:price,chgPct:0,
+          sharesM:s.shares_outstanding_m||0,
+          floatM:s.float_shares_m||0,
+          iwf,avgVol:s.mdvt_shares||0,
+          mdvtAdm:s.mdvt_adm||0,
+          name:s.company||s.ticker,
+          rl:s.relative_liquidity_pct||0,rank:{},
+        };
+      }
+      calcRL();assignRanks();
+      G.lastFetch=Date.now();
+      renderAll();updateLiveBadge();
+      alert(`✓ Loaded ${data.stocks.length} stocks from ${file.name}`);
+    }catch(err){alert('Error: '+err.message);}
+  };
+  r.readAsText(file);
 }
-function scheduleTimers(){
-  if(G.liveTimer)clearInterval(G.liveTimer);
-  G.liveTimer=setInterval(async()=>{await fetchLivePrices();recalcAll();},60000);
-}
+
+// ════════════════════════════════════════════════════════════════════════════
+// CACHE
+// ════════════════════════════════════════════════════════════════════════════
+const CK='asx_rebal_v4';
+function saveCache(){try{localStorage.setItem(CK,JSON.stringify({ts:Date.now(),stocks:G.stocks}));}catch(e){}}
+function loadCache(){try{const c=JSON.parse(localStorage.getItem(CK));if(c&&Date.now()-c.ts<20*3600000)return c;}catch(e){}return null;}
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -1032,16 +1134,25 @@ function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-
 function fmtTime(d){return d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false});}
 
 // ════════════════════════════════════════════════════════════════════════════
-// BOOT — runs immediately, no waiting for fetches
+// BOOT
 // ════════════════════════════════════════════════════════════════════════════
 G.dates=getRebalDates();
-renderAll();
-// Fetch live prices immediately (single batched call — far less likely to 429)
+renderAll(); // renders immediately with "Fetch to populate" state
+
+// Try to load from cache first
+const cached=loadCache();
+if(cached){
+  G.stocks=cached.stocks;
+  calcRL();assignRanks();
+  G.lastFetch=cached.ts;
+  renderAll();updateLiveBadge();
+}
+
+// Auto-fetch on load (and every 60s after)
 setTimeout(async()=>{
-  await fetchLivePrices();
-  recalcAll();
-  scheduleTimers();
-},500);
+  await doFetch();
+  G.timer=setInterval(doFetch,60000);
+},800);
 </script>
 </body>
 </html>
