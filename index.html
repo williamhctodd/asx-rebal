@@ -429,12 +429,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;heigh
 <div class="tabs-bar">
   <div class="tab-wrap">
     <div class="tab on" onclick="setView('all',this)">All Indices</div>
+    <div class="tab" onclick="setView('300',this)">ASX 300</div>
     <div class="tab" onclick="setView('200',this)">ASX 200</div>
     <div class="tab" onclick="setView('100',this)">ASX 100</div>
     <div class="tab" onclick="setView('50',this)">ASX 50</div>
     <div class="tab" onclick="setView('20',this)">ASX 20</div>
-    <div class="tab" onclick="setView('300',this)">ASX 300</div>
-    <div class="tab" onclick="setView('dq',this)">⚠ Data Quality</div>
   </div>
   <div class="tabs-right">
     <div class="aum-row">
@@ -469,11 +468,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;heigh
 <!-- ── MAIN CONTENT ── -->
 <div class="main" id="main-content">
   <div id="dq-section" style="display:none;"></div>
-  <div id="idx-200"></div>
-  <div id="idx-100"></div>
-  <div id="idx-50"></div>
-  <div id="idx-20"></div>
-  <div id="idx-300"></div>
+<div id="idx-300"></div>
+<div id="idx-200"></div>
+<div id="idx-100"></div>
+<div id="idx-50"></div>
+<div id="idx-20"></div>
 </div>
 
 <!-- ── FOOTER ── -->
@@ -1582,7 +1581,7 @@ function renderAll() {
   updateCards();
   renderTimeline();
   renderAssuptions();
-  for (const idx of ['200','100','50','20','300']) renderIndex(idx);
+  for (const idx of ['300','200','100','50','20']) renderIndex(idx);
   renderDQ();
 }
 
@@ -1901,7 +1900,7 @@ function toggleDetail(ticker, idx, side) {
 function setView(v, el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   el.classList.add('on');
-  const ids = ['200','100','50','20','300'];
+  const ids = ['300','200','100','50','20'];
   ids.forEach(i => { document.getElementById(`idx-${i}`).style.display = (v==='all'||v===i)?'':'none'; });
   document.getElementById('dq-section').style.display = v==='dq'?'':'none';
 }
