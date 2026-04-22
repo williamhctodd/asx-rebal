@@ -2,42 +2,30 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASX/REBAL</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ASX/REBAL — Index Rebalance Forecaster</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#05070d;--s1:#090c14;--s2:#0d1120;--s3:#111827;--b0:#0f1628;--b1:#162036;--b2:#1e2d4a;--t1:#e4eaf5;--t2:#8da0be;--t3:#4e6285;--t4:#283348;--acc:#1e6ef4;--acc2:#3b82f6;--add2:#34d399;--addbg:rgba(0,196,140,.08);--addbd:rgba(52,211,153,.22);--rem2:#f87171;--rembg:rgba(244,53,53,.08);--rembd:rgba(248,113,113,.22);--prob:#f5a623;--probbg:rgba(245,166,35,.08);--probbd:rgba(245,166,35,.25);--poss:#8b5cf6;--possbg:rgba(139,92,246,.08);--possbd:rgba(167,139,250,.25);--ma:#e879a0;--mabg:rgba(232,121,160,.08);--mabd:rgba(232,121,160,.25);--mono:'JetBrains Mono',monospace;--disp:'Syne',sans-serif;}
+:root{--bg:#05070d;--s1:#090c14;--s2:#0d1120;--s3:#111827;--b0:#0f1628;--b1:#162036;--b2:#1e2d4a;--t1:#e4eaf5;--t2:#8da0be;--t3:#4e6285;--t4:#283348;--acc:#1e6ef4;--acc2:#3b82f6;--add2:#34d399;--addbg:rgba(0,196,140,.08);--addbd:rgba(52,211,153,.22);--rem2:#f87171;--rembg:rgba(244,53,53,.08);--rembd:rgba(248,113,113,.22);--prob:#f5a623;--probbg:rgba(245,166,35,.08);--probbd:rgba(245,166,35,.25);--poss:#8b5cf6;--possbg:rgba(139,92,246,.08);--possbd:rgba(167,139,250,.25);--ma:#e879a0;--mabg:rgba(232,121,160,.08);--mabd:rgba(232,121,160,.25);--mono:"JetBrains Mono",monospace;--disp:"Syne",sans-serif;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--t1);font-family:var(--mono);font-size:12px;min-height:100vh;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(30,110,244,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(30,110,244,.025) 1px,transparent 1px);background-size:48px 48px;}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(30,110,244,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(30,110,244,.025) 1px,transparent 1px);background-size:48px 48px;}
 ::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 .hdr{position:sticky;top:0;z-index:300;background:rgba(5,7,13,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--b1);padding:0 24px;height:52px;display:flex;align-items:center;gap:0;}
-.logo{font-family:var(--disp);font-size:16px;font-weight:800;letter-spacing:-.5px;margin-right:20px;}
-.logo .sl{color:var(--acc2);}
-.logo .sub{font-family:var(--mono);font-size:8px;font-weight:400;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-left:8px;align-self:center;}
+.logo{font-family:var(--disp);font-size:16px;font-weight:800;letter-spacing:-.5px;margin-right:20px;}.logo .sl{color:var(--acc2);}
+.logo .sub{font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-left:8px;align-self:center;}
 .hsep{width:1px;height:26px;background:var(--b2);margin:0 16px;}
 .hmeta{display:flex;gap:18px;align-items:center;}
-.hm{display:flex;flex-direction:column;gap:1px;}
-.hml{font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;}
+.hm{display:flex;flex-direction:column;gap:1px;}.hml{font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;}
 .hmv{font-size:11px;color:var(--prob);font-weight:600;}
-.hprog{display:flex;flex-direction:column;gap:3px;min-width:140px;}
-.hprog .hml{display:flex;justify-content:space-between;}
-.pt{height:2px;background:var(--b2);border-radius:1px;overflow:hidden;}
-.pf{height:100%;background:linear-gradient(90deg,var(--acc),var(--poss));border-radius:1px;}
+.hprog{display:flex;flex-direction:column;gap:3px;min-width:140px;}.hprog .hml{display:flex;justify-content:space-between;}
+.pt{height:2px;background:var(--b2);border-radius:1px;overflow:hidden;}.pf{height:100%;background:linear-gradient(90deg,var(--acc),var(--poss));border-radius:1px;}
 .hr{margin-left:auto;display:flex;align-items:center;gap:8px;}
-.lbadge{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:600;padding:3px 9px;border-radius:3px;letter-spacing:.5px;text-transform:uppercase;}
-.lb-live{background:var(--addbg);color:var(--add2);border:1px solid var(--addbd);}
-.lb-fetch{background:var(--probbg);color:var(--prob);border:1px solid var(--probbd);}
-.ldot{width:5px;height:5px;border-radius:50%;background:currentColor;}
-.ldot.pulse{animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.snap-badge{background:rgba(30,110,244,.12);border:1px solid rgba(30,110,244,.35);color:#60a5fa;font-size:9px;padding:3px 9px;border-radius:3px;font-weight:600;}
 .hbtn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:4px;cursor:pointer;border:1px solid var(--b2);background:var(--s2);color:var(--t2);font-size:9px;letter-spacing:.5px;text-transform:uppercase;font-family:var(--mono);transition:all .15s;}
 .hbtn:hover{border-color:var(--acc2);color:var(--acc2);}
 .hbtn-a{background:rgba(30,110,244,.12);border-color:rgba(30,110,244,.35);color:#60a5fa;}
 .hbtn-g{background:rgba(0,196,140,.1);border-color:rgba(0,196,140,.3);color:var(--add2);}
-.fpbar{height:2px;background:var(--b2);overflow:hidden;display:none;}
-.fpbar.show{display:block;}
-.fpfill{height:100%;background:linear-gradient(90deg,var(--acc2),var(--add2));width:0%;transition:width .4s;}
 .cards{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--b0);border-bottom:1px solid var(--b1);position:relative;z-index:1;}
 .card{background:var(--s1);padding:12px 16px;display:flex;flex-direction:column;gap:3px;}
 .cl{font-size:7px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;}
@@ -58,11 +46,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .tl-n{position:absolute;top:0;transform:translateX(-50%);}
 .tl-pip{width:7px;height:7px;border-radius:50%;margin:2px auto;border:1.5px solid var(--b2);background:var(--b0);}
 .tl-pip.done{background:var(--acc);border-color:var(--acc);}.tl-pip.now{background:var(--acc2);border-color:var(--acc2);box-shadow:0 0 8px var(--acc2);}
-.tl-txt{font-size:7px;color:var(--t3);text-align:center;line-height:1.5;margin-top:3px;white-space:nowrap;}
-.tl-txt b{color:var(--t2);display:block;font-weight:500;}
+.tl-txt{font-size:7px;color:var(--t3);text-align:center;line-height:1.5;margin-top:3px;white-space:nowrap;}.tl-txt b{color:var(--t2);display:block;font-weight:500;}
 .assm{background:linear-gradient(90deg,rgba(30,110,244,.04),transparent);border-bottom:1px solid var(--b0);border-left:2px solid var(--acc);padding:7px 24px;font-size:8px;color:var(--t3);line-height:1.8;position:relative;z-index:1;}
-.assm .row{display:flex;gap:18px;flex-wrap:wrap;}
-.assm b{color:var(--t2);}.assm .warn{color:var(--prob);}
+.assm .row{display:flex;gap:18px;flex-wrap:wrap;}.assm b{color:var(--t2);}.assm .warn{color:var(--prob);}
+.update-banner{background:rgba(30,110,244,.06);border-bottom:1px solid rgba(30,110,244,.2);padding:10px 24px;display:flex;align-items:center;gap:12px;font-size:9px;color:var(--t2);position:relative;z-index:1;}
+.update-banner b{color:#60a5fa;}.ub-close{margin-left:auto;background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px;}
+.price-editor{display:none;background:var(--s2);border-bottom:1px solid var(--b1);padding:14px 24px;position:relative;z-index:2;}
 .main{padding:14px 24px;display:flex;flex-direction:column;gap:12px;position:relative;z-index:1;}
 .isec-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--b1);border-bottom:none;border-radius:6px 6px 0 0;cursor:pointer;user-select:none;}
 .isec-hdr:hover{background:var(--s3);}
@@ -72,30 +61,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .p100{background:rgba(245,166,35,.12);color:#fbbf24;border:1px solid rgba(245,166,35,.25);}
 .p50{background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.25);}
 .p20{background:rgba(30,110,244,.12);color:#60a5fa;border:1px solid rgba(30,110,244,.25);}
-.ititle{font-family:var(--disp);font-size:12px;font-weight:600;}
-.imeta{font-size:8px;color:var(--t3);}
+.ititle{font-family:var(--disp);font-size:12px;font-weight:600;}.imeta{font-size:8px;color:var(--t3);}
 .ichips{display:flex;gap:4px;margin-left:auto;}
 .chip{font-size:8px;padding:2px 6px;border-radius:2px;font-weight:600;}
 .ch-a{background:var(--addbg);color:var(--add2);border:1px solid var(--addbd);}
 .ch-r{background:var(--rembg);color:var(--rem2);border:1px solid var(--rembd);}
-.chev{color:var(--t3);font-size:9px;transition:transform .2s;margin-left:4px;}
-.chev.op{transform:rotate(180deg);}
-.tbl-outer{border:1px solid var(--b1);border-top:none;border-radius:0 0 6px 6px;overflow:hidden;display:none;}
-.tbl-outer.op{display:block;}
-.split{display:grid;grid-template-columns:1fr 1fr;}
-.tside:first-child{border-right:1px solid var(--b1);}
-.tside-hdr{padding:7px 12px;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:5px;}
+.chev{color:var(--t3);font-size:9px;transition:transform .2s;margin-left:4px;}.chev.op{transform:rotate(180deg);}
+.tbl-outer{border:1px solid var(--b1);border-top:none;border-radius:0 0 6px 6px;overflow:hidden;display:none;}.tbl-outer.op{display:block;}
+.split{display:grid;grid-template-columns:1fr 1fr;}.tside:first-child{border-right:1px solid var(--b1);}
+.tside-hdr{padding:7px 12px;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
 .th-a{background:rgba(0,196,140,.05);color:var(--add2);border-bottom:1px solid var(--addbd);}
 .th-r{background:rgba(244,53,53,.05);color:var(--rem2);border-bottom:1px solid var(--rembd);}
 table{width:100%;border-collapse:collapse;}
 thead th{padding:5px 8px;text-align:left;background:var(--s2);font-size:7.5px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--b1);white-space:nowrap;cursor:help;}
 thead th:first-child{padding-left:12px;}
 tbody tr{border-bottom:1px solid rgba(22,32,54,.7);cursor:pointer;transition:background .1s;}
-tbody tr:last-child{border-bottom:none;}
-tbody tr:hover{background:rgba(30,110,244,.04);}
-tbody tr.xp{background:rgba(30,110,244,.06);}
-td{padding:7px 8px;vertical-align:middle;white-space:nowrap;}
-td:first-child{padding-left:12px;}
+tbody tr:last-child{border-bottom:none;}tbody tr:hover{background:rgba(30,110,244,.04);}tbody tr.xp{background:rgba(30,110,244,.06);}
+td{padding:7px 8px;vertical-align:middle;white-space:nowrap;}td:first-child{padding-left:12px;}
 .pb{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:2px;font-size:7.5px;font-weight:700;letter-spacing:.4px;}
 .pb-sa{background:var(--addbg);color:var(--add2);border:1px solid var(--addbd);}
 .pb-sr{background:var(--rembg);color:var(--rem2);border:1px solid var(--rembd);}
@@ -106,17 +88,10 @@ td:first-child{padding-left:12px;}
 .co{color:var(--t2);font-size:9px;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:block;}
 .nv{color:var(--t2);}.np{color:var(--add2);}.nn{color:var(--rem2);}.nw{color:var(--prob);}
 .matag{font-size:7px;font-weight:700;padding:1px 4px;border-radius:2px;background:var(--mabg);color:var(--ma);border:1px solid var(--mabd);margin-left:3px;}
-.rg{display:flex;align-items:center;gap:5px;}
-.rg-bar{width:36px;height:2px;background:var(--b2);border-radius:1px;overflow:hidden;}
-.rg-fill{height:100%;border-radius:1px;}
-.rf-in{background:var(--add2);}.rf-out{background:var(--rem2);}.rf-near{background:var(--prob);}
+.rg{display:flex;align-items:center;gap:5px;}.rg-bar{width:36px;height:2px;background:var(--b2);border-radius:1px;overflow:hidden;}
+.rg-fill{height:100%;border-radius:1px;}.rf-in{background:var(--add2);}.rf-out{background:var(--rem2);}.rf-near{background:var(--prob);}
 .rg-num{font-size:10px;font-weight:600;}
-.lpx{display:flex;flex-direction:column;gap:1px;}
-.lp-p{font-size:11px;font-weight:600;}
-.lp-c{font-size:8px;}
-.lup{color:var(--add2);}.ldn{color:var(--rem2);}
-.pti{font-size:9px;line-height:1.5;}
-.pti-g{color:var(--add2);}.pti-a{color:var(--prob);}.pti-r{color:var(--rem2);}
+.pti{font-size:9px;line-height:1.5;}.pti-g{color:var(--add2);}.pti-a{color:var(--prob);}.pti-r{color:var(--rem2);}
 .pti-p{font-size:10px;font-weight:600;}
 .rl-ok{color:var(--add2);}.rl-w{color:var(--prob);}.rl-b{color:var(--rem2);}
 .dtc-ok{color:var(--add2);}.dtc-m{color:var(--prob);}.dtc-h{color:var(--rem2);}
@@ -126,8 +101,7 @@ td:first-child{padding-left:12px;}
 .dp-col{display:flex;flex-direction:column;gap:5px;}
 .dp-hd{font-size:8px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--b1);padding-bottom:3px;margin-bottom:2px;}
 .dp-r{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
-.dp-l{font-size:8px;color:var(--t3);}
-.dp-v{font-size:9px;color:var(--t1);font-weight:500;}
+.dp-l{font-size:8px;color:var(--t3);}.dp-v{font-size:9px;color:var(--t1);font-weight:500;}
 .formula{background:var(--b0);border:1px solid var(--b1);border-radius:4px;padding:8px;font-size:8px;color:var(--t2);line-height:1.8;white-space:pre-wrap;word-break:break-all;}
 .formula .hlg{color:var(--add2);font-weight:600;}
 .notes-ta{width:100%;height:52px;background:var(--b0);border:1px solid var(--b1);border-radius:3px;color:var(--t1);font-family:var(--mono);font-size:8px;padding:6px;resize:vertical;}
@@ -139,8 +113,7 @@ td:first-child{padding-left:12px;}
 .cg-sec{padding:14px 16px;border-right:1px solid var(--b1);border-bottom:1px solid var(--b1);}
 .cg-sec:nth-child(3n){border-right:none;}.cg-sec:nth-last-child(-n+3){border-bottom:none;}
 .cg-sec h4{font-size:9px;font-weight:700;color:var(--acc2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-.cg-item{margin-bottom:9px;}
-.cg-term{font-size:9px;font-weight:700;color:var(--t1);margin-bottom:3px;}
+.cg-item{margin-bottom:9px;}.cg-term{font-size:9px;font-weight:700;color:var(--t1);margin-bottom:3px;}
 .cg-def{font-size:8.5px;color:var(--t3);line-height:1.7;}
 .cg-def .good{color:var(--add2);font-weight:600;}.cg-def .bad{color:var(--rem2);font-weight:600;}.cg-def .warn{color:var(--prob);font-weight:600;}.cg-def .ex{color:var(--t2);}
 .cg-def code{background:rgba(0,0,0,.35);padding:1px 5px;border-radius:3px;color:var(--add2);font-size:8px;}
@@ -162,22 +135,35 @@ td:first-child{padding-left:12px;}
     </div>
   </div>
   <div class="hr">
-    <div class="lbadge lb-fetch" id="live-badge"><span class="ldot" id="live-dot"></span><span id="live-txt">Loading...</span></div>
+    <div class="snap-badge" id="snap-badge">📸 Snapshot: 22 Apr 2026</div>
     <label class="hbtn hbtn-a" style="cursor:pointer;">
-      📂 Load JSON
-      <input type="file" id="json-file" accept=".json" style="display:none" onchange="loadJSON(event)">
+      📂 Load JSON<input type="file" id="json-file" accept=".json" style="display:none" onchange="loadJSON(event)">
     </label>
-    <button class="hbtn hbtn-g" id="fetch-btn" onclick="startFetch()">↺ Fetch Live</button>
   </div>
 </div>
-<div class="fpbar" id="fpbar"><div class="fpfill" id="fpfill"></div></div>
+<div class="update-banner" id="update-banner">
+  <span>📸</span>
+  <span>Snapshot from <b>22 Apr 2026</b> — <b>331 stocks</b>: exactly 20/50/100/200/300 constituents + 31 buffer stocks (potential next-rebal additions). To update prices: click <b>✏️ Update Prices</b> and paste from Bloomberg/market data, or use <b>📂 Load JSON</b> from the Python fetcher.</span>
+  <button class="hbtn hbtn-g" style="white-space:nowrap" onclick="document.getElementById('price-editor').style.display='block';document.getElementById('price-input').focus();">✏️ Update Prices</button>
+  <button class="ub-close" onclick="document.getElementById('update-banner').style.display='none'">✕</button>
+</div>
+<div class="price-editor" id="price-editor">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+    <span style="font-family:var(--disp);font-size:12px;font-weight:700;">✏️ Update Prices</span>
+    <span style="font-size:9px;color:var(--t3)">Paste TICKER PRICE (one per line, or two columns from Excel/Bloomberg). Click Apply to recalculate all rankings instantly.</span>
+    <button class="hbtn hbtn-g" onclick="applyPrices()">Apply &amp; Recalculate</button>
+    <button class="hbtn" onclick="document.getElementById('price-editor').style.display='none'">Close</button>
+    <span style="font-size:8px;color:var(--t3)" id="price-result"></span>
+  </div>
+  <textarea id="price-input" style="width:100%;height:110px;background:var(--b0);border:1px solid var(--b2);border-radius:4px;color:var(--t1);font-family:var(--mono);font-size:10px;padding:8px;resize:vertical;" placeholder="CBA  163.50&#10;BHP   38.20&#10;CSL  283.00&#10;...paste all tickers you want to update"></textarea>
+</div>
 <div class="cards">
   <div class="card"><div class="cl">Strong Additions</div><div class="cv cva" id="cnt-a">-</div><div class="cs">inside add buffer</div></div>
   <div class="card"><div class="cl">Strong Removals</div><div class="cv cvr" id="cnt-r">-</div><div class="cs">inside del buffer</div></div>
   <div class="card"><div class="cl">Buffer Watch</div><div class="cv cvp" id="cnt-w">-</div><div class="cs">possible candidates</div></div>
-  <div class="card"><div class="cl">Stocks Tracked</div><div class="cv cvb" id="cnt-s">-</div><div class="cs">ranked by live mkt cap</div></div>
-  <div class="card"><div class="cl">ASX 300 Count</div><div class="cv cvb" id="cnt-300">-</div><div class="cs" id="cnt-300s">target: 300</div></div>
-  <div class="card"><div class="cl">Last Updated</div><div class="cv cvt" style="font-size:16px" id="last-upd">-</div><div class="cs">auto-refresh every 60s</div></div>
+  <div class="card"><div class="cl">Stocks Tracked</div><div class="cv cvb" id="cnt-s">331</div><div class="cs">20+50+100+200+300+buffer</div></div>
+  <div class="card"><div class="cl">ASX 300 Count</div><div class="cv cvb" id="cnt-300">300</div><div class="cs" id="cnt-300s">✓ at target</div></div>
+  <div class="card"><div class="cl">Snapshot Date</div><div class="cv cvt" style="font-size:14px" id="snap-date">22 Apr 2026</div><div class="cs">✏️ update prices above</div></div>
 </div>
 <div class="tabs-bar">
   <div class="tab on" onclick="setView('all',this)">All Indices</div>
@@ -195,10 +181,10 @@ td:first-child{padding-left:12px;}
 <div class="tl-bar"><div class="tl" id="tl"></div></div>
 <div class="assm">
   <div class="row">
-    <span><b>Rankings:</b> Live float-adj. mkt cap from Yahoo Finance (spot) · <span id="a-period">loading...</span></span>
-    <span><b>RL%:</b> MDVT / mktCap vs All Ords benchmark · <span class="warn">must be ≥50% for ASX200+ · ≥30% for ASX300</span></span>
-    <span><b>IWF:</b> float / shares from Yahoo · <span class="warn">dual-listed stocks (BHP/RIO etc) may overstate FMC</span></span>
-    <span><b>Note:</b> S&P uses 3-month average FMC. This tool uses live mkt cap — directionally accurate for identifying candidates.</span>
+    <span><b>Snapshot 22 Apr 2026:</b> <span id="a-period">loading...</span></span>
+    <span><b>Universe:</b> ASX 20 (20) + ASX 50 (50) + ASX 100 (100) + ASX 200 (200) + ASX 300 (300) + 31 buffer stocks = 331 total</span>
+    <span><b>RL%:</b> MDVT/mktCap vs All Ords benchmark · <span class="warn">≥50% ASX200+ · ≥30% ASX300</span></span>
+    <span><b>IWF:</b> <span class="warn">CDI overrides applied for dual-listed stocks (BHP/RIO/AMC/RMD etc)</span></span>
   </div>
 </div>
 <div class="main" id="main">
@@ -207,33 +193,33 @@ td:first-child{padding-left:12px;}
       <div class="cg-hdr"><span style="font-size:18px;">📖</span><h3>Column Guide — What Everything Means</h3></div>
       <div class="cg-grid">
         <div class="cg-sec"><h4>🟢 Status Badge</h4>
-          <div class="cg-item"><div class="cg-term">⬆ STRONG (green)</div><div class="cg-def">Stock is a non-constituent ranked <span class="good">inside the add buffer</span> (e.g. rank ≤179 for ASX 200). High probability of being added at next rebalance if price holds.</div></div>
-          <div class="cg-item"><div class="cg-term">⬇ STRONG (red)</div><div class="cg-def">Current constituent has dropped <span class="bad">outside the deletion buffer</span> (e.g. rank ≥221 for ASX 200). High probability of removal.</div></div>
-          <div class="cg-item"><div class="cg-term">◆ POSS (purple)</div><div class="cg-def">Within <span class="warn">~25 ranks of the buffer</span>. Could move in or out. Watch closely — especially if price is trending.</div></div>
-          <div class="cg-item"><div class="cg-term">○ WATCH (grey)</div><div class="cg-def">Within ~50 ranks of the buffer. On the radar, needs a meaningful move to cross.</div></div>
+          <div class="cg-item"><div class="cg-term">⬆ STRONG (green)</div><div class="cg-def">Non-constituent ranked <span class="good">inside the addition buffer</span>. High probability of being added if price holds to reference date.<br><br><span class="ex">e.g. rank ≤179 for ASX 200 addition, rank ≤274 for ASX 300 addition</span></div></div>
+          <div class="cg-item"><div class="cg-term">⬇ STRONG (red)</div><div class="cg-def">Current constituent ranked <span class="bad">outside the deletion buffer</span>. High probability of removal.<br><br><span class="ex">e.g. rank ≥221 for ASX 200 removal, rank ≥326 for ASX 300 removal</span></div></div>
+          <div class="cg-item"><div class="cg-term">◆ POSS (purple)</div><div class="cg-def">Within <span class="warn">~25 ranks</span> of the buffer threshold. Price is close — watch for moves.</div></div>
+          <div class="cg-item"><div class="cg-term">○ WATCH (grey)</div><div class="cg-def">Within ~50 ranks. On radar but needs a more meaningful move.</div></div>
         </div>
         <div class="cg-sec"><h4>📊 Market Cap and Rank</h4>
-          <div class="cg-item"><div class="cg-term">FF MKT CAP</div><div class="cg-def">Float-Adjusted Market Cap — the ranking metric S&P uses.<br><code>Price × Shares × IWF</code><br>S&P uses the <span class="warn">3-month daily average</span>. This tool uses the <span class="ex">live spot value</span> as a real-time proxy. They will be close but not identical.<br><span class="ex">Example: A$2.5b = float-adjusted market cap of $2.5 billion</span></div></div>
-          <div class="cg-item"><div class="cg-term">RANK</div><div class="cg-def">Current position ranked by FF Mkt Cap. <span class="good">Rank 1 = largest.</span> The bar shows position vs the buffer threshold.<br><span class="good">Green</span> = inside buffer · <span class="warn">Amber</span> = near buffer · <span class="bad">Red</span> = outside buffer</div></div>
-          <div class="cg-item"><div class="cg-term">IWF (Investable Weight Factor)</div><div class="cg-def">Free float fraction. IWF 1.0 = all shares publicly tradeable. IWF 0.6 = 40% held by insiders.<br><span class="warn">Min IWF of 0.15 required for index entry.</span><br><span class="bad">Warning: For dual-listed stocks (BHP, RIO, AMC), Yahoo uses global share count — ASX CDI count is far lower, making FMC appear larger than the ASX reality.</span></div></div>
+          <div class="cg-item"><div class="cg-term">FF MKT CAP (Float-Adjusted)</div><div class="cg-def">The S&P ranking metric: <code>Price × Shares × IWF</code><br>S&P uses the <span class="warn">3-month daily average</span>. This snapshot uses spot prices — directionally accurate, slightly different from official S&P ranks. Update prices via ✏️ to recalculate.</div></div>
+          <div class="cg-item"><div class="cg-term">RANK</div><div class="cg-def">Position by FF Mkt Cap across all 331 tracked stocks.<br><span class="good">Rank 1 = largest company.</span><br>Bar colour: <span class="good">Green</span>=inside buffer · <span class="warn">Amber</span>=near · <span class="bad">Red</span>=outside</div></div>
+          <div class="cg-item"><div class="cg-term">IWF (Investable Weight Factor)</div><div class="cg-def">Free float fraction applied to market cap. 1.0 = all shares publicly tradeable.<br><span class="bad">Dual-listed stocks (BHP, RIO, AMC, RMD, LNW, 360 etc) have CDI-adjusted IWF pre-applied.</span></div></div>
         </div>
         <div class="cg-sec"><h4>💧 Price and Liquidity</h4>
-          <div class="cg-item"><div class="cg-term">LIVE PRICE</div><div class="cg-def">Current price from Yahoo Finance (15-20 min delayed). The % shows today's move. As price moves, FF Mkt Cap and rank update every 60 seconds.</div></div>
-          <div class="cg-item"><div class="cg-term">RL% (Relative Liquidity)</div><div class="cg-def"><span class="warn">Hard eligibility gate — failing disqualifies a stock regardless of rank.</span><br><code>(MDVT / FF Mkt Cap) / market average × 100</code><br><span class="good">≥50%</span> = eligible for ASX 200 and above<br><span class="good">≥30%</span> = eligible for ASX 300<br><span class="warn">25-50%</span> = at risk of removal from ASX 200<br><span class="bad">&lt;25%</span> = below removal threshold, will be removed<br><span class="warn">Note: on-market volume only — actual RL slightly higher due to off-market trades.</span></div></div>
-          <div class="cg-item"><div class="cg-term">MDVT</div><div class="cg-def">Median Daily Value Traded in A$m/day over 3 months. Typical daily turnover in dollar terms.<br><span class="ex">Example: MDVT A$8.5m = on a typical day, $8.5 million of this stock changes hands on ASX.</span></div></div>
+          <div class="cg-item"><div class="cg-term">PRICE</div><div class="cg-def">Snapshot price as of 22 Apr 2026. Click <b style="color:var(--add2)">✏️ Update Prices</b> to paste fresh prices — rankings recalculate instantly across all 331 stocks.</div></div>
+          <div class="cg-item"><div class="cg-term">RL% (Relative Liquidity)</div><div class="cg-def"><span class="warn">Hard eligibility gate — a stock failing this cannot be included regardless of market cap rank.</span><br><code>(MDVT / FF Mkt Cap) / market weighted avg × 100</code><br><span class="good">≥50%</span> = ASX 200 eligible<br><span class="good">≥30%</span> = ASX 300 eligible<br><span class="warn">25-50%</span> = at risk (removal zone for ASX 200)<br><span class="bad">&lt;25%</span> = removal threshold</div></div>
+          <div class="cg-item"><div class="cg-term">MDVT</div><div class="cg-def">Median Daily Value Traded A$m/day over 3 months. Used to calculate RL% and DTC (Days to Close).</div></div>
         </div>
         <div class="cg-sec"><h4>💰 Passive Flow</h4>
-          <div class="cg-item"><div class="cg-term">FLOW A$m</div><div class="cg-def">Estimated passive fund buying or selling if this stock enters or exits the index.<br><code>(Stock FF Mkt Cap / Total Index FF Mkt Cap) × Passive AUM</code><br><span class="good">+A$24m</span> = passive funds need to BUY $24m at effective date<br><span class="bad">-A$657m</span> = passive funds need to SELL $657m<br>Adjust AUM assumptions top-right. Defaults: ASX 200 = A$80bn, ASX 300 = A$15bn.</div></div>
-          <div class="cg-item"><div class="cg-term">DTC (Days to Close)</div><div class="cg-def">Passive flow divided by daily volume. How many days of trading the passive flow represents.<br><span class="good">DTC &lt;1</span> = small impact, easily absorbed<br><span class="warn">DTC 1-5</span> = moderate, funds spread trading over a few days<br><span class="bad">DTC &gt;5</span> = large relative to volume. Active managers can trade ahead of this.<br><span class="ex">Example: DTC 53d = passive funds need 53 days of avg volume to complete their trade.</span></div></div>
+          <div class="cg-item"><div class="cg-term">FLOW A$m</div><div class="cg-def">Estimated passive/index fund buying or selling if the stock enters or exits the index.<br><code>(Stock FF Mkt Cap / Index total FF Mkt Cap) × Passive AUM</code><br><span class="good">+A$24m</span> = passive funds need to BUY<br><span class="bad">-A$657m</span> = passive funds need to SELL<br><br>Adjust passive AUM assumptions top-right. Defaults: ASX 200 = A$80bn, ASX 300 = A$15bn.</div></div>
+          <div class="cg-item"><div class="cg-term">DTC (Days to Close)</div><div class="cg-def">Passive flow ÷ MDVT. How many days of average trading volume the passive flow represents.<br><span class="good">DTC &lt;1</span> = low impact, easily absorbed<br><span class="warn">DTC 1-5</span> = moderate, funds spread over a few days<br><span class="bad">DTC &gt;5</span> = high impact — active managers can trade ahead of the rebalance</div></div>
         </div>
         <div class="cg-sec"><h4>🎯 Price to Include / Safety</h4>
-          <div class="cg-item"><div class="cg-term">PRICE TO INCLUDE</div><div class="cg-def">The <span class="warn">average price this stock needs to sustain</span> for the remaining reference period days to rank inside the add buffer by the reference date. This is NOT a one-day target — it is a sustained average.<br><span class="good">-5% from spot</span> = already qualifying<br><span class="warn">+12% from spot</span> = needs 12% sustained rally<br><span class="bad">+45% from spot</span> = very unlikely at this stage</div></div>
-          <div class="cg-item"><div class="cg-term">PRICE TO SAFETY</div><div class="cg-def">For removal candidates: the average price the stock needs to <span class="good">recover to</span> in order to rank safely inside the index. Shown as a price and % move needed from current spot.</div></div>
+          <div class="cg-item"><div class="cg-term">PRICE TO INCLUDE</div><div class="cg-def">The average price this stock needs to sustain over the <span class="warn">remaining reference period days</span> to rank inside the add buffer at the reference date.<br><br>This is NOT a one-day target. S&P ranks by the 3-month average, so sustained movement matters more than a single-day spike.<br><br><span class="good">-5% from spot</span> = already tracking to qualify<br><span class="warn">+12% from spot</span> = needs a sustained 12% rally<br><span class="bad">+40%+ from spot</span> = very unlikely at this stage</div></div>
+          <div class="cg-item"><div class="cg-term">PRICE TO SAFETY</div><div class="cg-def">For removal candidates: average price needed to recover to rank safely inside the deletion buffer before the reference date.</div></div>
         </div>
-        <div class="cg-sec"><h4>📅 Key Dates and Rules</h4>
-          <div class="cg-item"><div class="cg-term">Reference Period</div><div class="cg-def">The 3-month window S&P uses to calculate average FMC and liquidity. The Reference Date (end of period) is when S&P takes the snapshot that determines index membership.<br><span class="ex">June 2026: period runs ~16 Feb to 22 May 2026</span></div></div>
-          <div class="cg-item"><div class="cg-term">Announcement vs Effective</div><div class="cg-def"><span class="warn">Announcement</span> = 1st Friday of rebalance month. S&P publishes all changes. Stocks typically move on this day.<br><span class="warn">Effective</span> = 3rd Friday. Passive funds must complete all trades by close. The 2-week window between these dates is when the actual buying and selling happens.</div></div>
-          <div class="cg-item"><div class="cg-term">Buffer Rules</div><div class="cg-def"><span class="ex">ASX 20: add ≤14th, remove ≥26th</span><br><span class="ex">ASX 50: add ≤39th, remove ≥61st</span><br><span class="ex">ASX 100: add ≤84th, remove ≥116th</span><br><span class="ex">ASX 200: add ≤179th, remove ≥221st</span><br><span class="ex">ASX 300: add ≤274th, remove ≥326th</span><br>Index Committee can override when M&A creates a vacancy mid-quarter.</div></div>
+        <div class="cg-sec"><h4>📅 Key Rules and Dates</h4>
+          <div class="cg-item"><div class="cg-term">Buffer Rules (S&P/ASX Jan 2026)</div><div class="cg-def"><span class="ex">ASX 20: add if ranked ≤14, remove if ≥26</span><br><span class="ex">ASX 50: add if ranked ≤39, remove if ≥61</span><br><span class="ex">ASX 100: add if ranked ≤84, remove if ≥116</span><br><span class="ex">ASX 200: add if ranked ≤179, remove if ≥221</span><br><span class="ex">ASX 300: add if ranked ≤274, remove if ≥326</span><br><br>The Index Committee can override these when M&A creates a vacancy mid-quarter.</div></div>
+          <div class="cg-item"><div class="cg-term">Reference Period and Dates</div><div class="cg-def">S&P calculates average FMC over ~3 months ending at the <span class="warn">Reference Date</span> (2nd-to-last Friday of the prior month).<br><br><span class="warn">Announcement</span> = 1st Friday rebalance month — stocks react on this day.<br><span class="warn">Effective</span> = 3rd Friday — passive funds complete all trades.</div></div>
+          <div class="cg-item"><div class="cg-term">How to Update Prices</div><div class="cg-def">Click <b style="color:var(--add2)">✏️ Update Prices</b> in the blue banner. Paste two columns (ticker + price) from Excel or Bloomberg. All 331 stock rankings recalculate instantly — no internet required.<br><br>For full 3-month history data, run the Python fetcher and click <b style="color:#60a5fa">📂 Load JSON</b>.</div></div>
         </div>
       </div>
     </div>
@@ -245,656 +231,724 @@ td:first-child{padding-left:12px;}
   <div id="idx-20"></div>
 </div>
 <div class="footer">
-  Quantitative analytical tool only — not financial advice. Rankings use live market cap from Yahoo Finance as proxy for S&P 3-month average FMC. IWF estimated from Yahoo Finance data. All outputs indicative only — subject to Index Committee discretion. S&P/ASX indices are trademarks of S&P Dow Jones Indices LLC and ASX Operations Pty Ltd. Not for distribution. · williamhctodd.github.io/asx-rebal
+  Quantitative analytical tool only — not financial advice. Snapshot data approximate as of 22 Apr 2026. Rankings use float-adjusted market cap as proxy for S&P 3-month average FMC — directionally accurate, may differ from official S&P calculations. IWF estimated; CDI overrides applied for known dual-listed stocks. All outputs indicative only — subject to Index Committee discretion, data revisions and corporate actions. S&P/ASX indices are trademarks of S&P Dow Jones Indices LLC and ASX Operations Pty Ltd. Not for distribution. · williamhctodd.github.io/asx-rebal
 </div>
 <script>
 'use strict';
-
-// ─── UNIVERSE ────────────────────────────────────────────────────────────────
-// [ticker, company, currentIndex, iwfOverride, maFlag]
-// currentIndex = the LOWEST named index the stock is currently IN
-//   '20'   = in ASX 20 (also in 50/100/200/300)
-//   '50'   = in ASX 50 but NOT in ASX 20
-//   '100'  = in ASX 100 but NOT in ASX 50
-//   '200'  = in ASX 200 but NOT in ASX 100
-//   '300'  = in ASX 300 but NOT in ASX 200
-//   'none' = NOT in any index (watch list / potential addition)
-// KEY RULE: stockIsInIndex('50','200') = TRUE because ASX50 stock IS in ASX200
-//           stockIsInIndex('200','100') = FALSE because 200 > 100
-// ─────────────────────────────────────────────────────────────────────────────
-const UNI = [
-  ['CBA','Commonwealth Bank','20',null,false],['BHP','BHP Group','20',0.998,false],
-  ['CSL','CSL Limited','20',null,false],['NAB','Natl Australia Bank','20',null,false],
-  ['WBC','Westpac Banking','20',null,false],['ANZ','ANZ Group Holdings','20',null,false],
-  ['WES','Wesfarmers','20',null,false],['MQG','Macquarie Group','20',null,false],
-  ['RIO','Rio Tinto','20',0.998,false],['WOW','Woolworths Group','20',null,false],
-  ['GMG','Goodman Group','50',null,false],['TLS','Telstra Group','50',null,false],
-  ['FMG','Fortescue','50',null,false],['ALL','Aristocrat Leisure','50',null,false],
-  ['REA','REA Group','50',null,false],['COL','Coles Group','50',null,false],
-  ['QBE','QBE Insurance','50',null,false],['TCL','Transurban Group','50',null,false],
-  ['WTC','Wisetech Global','50',null,false],['PME','Pro Medicus','50',null,false],
-  ['STO','Santos Limited','50',null,false],['IAG','Insurance Australia Group','50',null,false],
-  ['SUN','Suncorp Group','50',null,false],['AMC','Amcor PLC','50',0.15,false],
-  ['SOL','WH Soul Pattinson','50',null,false],['XRO','Xero Limited','50',null,false],
-  ['CAR','CAR Group','50',null,false],
-  ['ORG','Origin Energy','100',null,false],['RMD','ResMed Inc','100',0.062,false],
-  ['MIN','Mineral Resources','100',null,false],['JHX','James Hardie Industries','100',null,false],
-  ['LNW','Light and Wonder','100',0.37,false],['BSL','BlueScope Steel','100',null,false],
-  ['ORI','Orica Limited','100',null,false],['CHC','Charter Hall Group','100',null,false],
-  ['VCX','Vicinity Centres','100',null,false],['GPT','GPT Group','100',null,false],
-  ['SGP','Stockland','100',null,false],['MGR','Mirvac Group','100',null,false],
-  ['DXS','Dexus','100',null,false],['APA','APA Group','100',null,false],
-  ['AZJ','Aurizon Holdings','100',null,false],['TWE','Treasury Wine Estates','100',null,false],
-  ['EBO','EBOS Group','100',null,false],['CWY','Cleanaway Waste','100',null,false],
-  ['NHF','nib holdings','100',null,false],['AGL','AGL Energy','100',null,false],
-  ['SHL','Sonic Healthcare','100',null,false],['RHC','Ramsay Health Care','100',null,false],
-  ['EVN','Evolution Mining','100',null,false],['NST','Northern Star Resources','100',null,false],
-  ['IGO','IGO Limited','100',null,false],['PDN','Paladin Energy','100',null,false],
-  ['ALQ','ALS Limited','100',null,false],['ANN','Ansell Limited','100',null,false],
-  ['DOW','Downer EDI','100',null,false],['SFR','Sandfire Resources','100',null,false],
-  ['HUB','HUB24 Limited','100',null,false],['GQG','GQG Partners','100',null,false],
-  ['NXT','NextDC Limited','100',null,false],['PNI','Pinnacle Investment','100',null,false],
-  ['CDA','Codan Limited','100',null,false],['360','Life360 Inc','100',0.85,false],
-  ['MTS','Metcash Limited','100',null,false],['AMP','AMP Limited','100',null,false],
-  ['S32','South32','100',null,false],['BXB','Brambles Limited','100',null,false],
-  ['COH','Cochlear Limited','100',null,false],['CPU','Computershare','100',null,false],
-  ['LYC','Lynas Rare Earths','100',null,false],['QAN','Qantas Airways','100',null,false],
-  ['JBH','JB Hi-Fi','100',null,false],['SEK','Seek Limited','100',null,false],
-  ['WOR','Worley Limited','100',null,false],['NWL','Netwealth Group','100',null,false],
-  ['BEN','Bendigo Adelaide Bank','100',null,false],['BOQ','Bank of Queensland','100',null,false],
-  ['NSR','National Storage REIT','100',null,false],['TNE','Technology One','100',null,false],
-  ['SVW','Seven Group Holdings','100',null,false],['SCG','Scentre Group','100',null,false],
-  ['QUB','QUBE Holdings','100',null,false],['VEA','Viva Energy Group','100',null,false],
-  ['CCP','Credit Corp Group','100',null,false],['YAL','Yancoal Australia','100',null,false],
-  ['NWH','NRW Holdings','100',null,false],['FPH','Fisher Paykel Healthcare','100',0.998,false],
-  ['IPH','IPH Limited','100',null,false],['SUL','Super Retail Group','100',null,false],
-  ['BAP','Bapcor Limited','100',null,false],['ARB','ARB Corporation','100',null,false],
-  ['SDR','SiteMinder Limited','200',null,true],['WEB','WEB Travel Group','200',null,false],
-  ['TPW','Temple Webster','200',null,false],['GYG','Guzman y Gomez','200',null,false],
-  ['ABB','Aussie Broadband','200',null,false],['SLC','Superloop Limited','200',null,false],
-  ['MFG','Magellan Financial','200',null,false],['DMP','Dominos Pizza','200',null,false],
-  ['MP1','Megaport Limited','200',null,false],['SSM','Service Stream','200',null,false],
-  ['REG','Regis Healthcare','200',null,false],['ELV','Elevra Lithium','200',null,false],
-  ['FFM','FireFly Metals','200',null,false],['DDR','Dicker Data','200',null,false],
-  ['DTL','Data3 Limited','200',null,false],['NEC','Nine Entertainment','200',null,false],
-  ['PMV','Premier Investments','200',null,false],['NCK','Nick Scali','200',null,false],
-  ['SIQ','Smartgroup Corp','200',null,false],['LIC','Lifestyle Communities','200',null,false],
-  ['IEL','IDP Education','200',null,false],['TLX','Telix Pharmaceuticals','200',null,false],
-  ['ARF','Arena REIT','200',null,false],['DVP','Develop Global','200',null,false],
-  ['IRE','IRESS Limited','200',null,false],['PNR','Pantoro Gold','200',null,false],
-  ['HVN','Harvey Norman','200',null,false],['LOV','Lovisa Holdings','200',null,false],
-  ['MAQ','Macquarie Telecom','200',null,false],['MPL','Medibank Private','200',null,false],
-  ['ORA','Orora Limited','200',null,false],['PLS','Pilbara Minerals','200',null,false],
-  ['PRU','Perseus Mining','200',null,false],['WHC','Whitehaven Coal','200',null,false],
-  ['WGX','Westgold Resources','200',null,false],['AUB','AUB Group','200',null,false],
-  ['BPT','Beach Energy','200',null,false],['CGF','Challenger Limited','200',null,false],
-  ['CMM','Capricorn Metals','200',null,false],['COF','Centuria Office REIT','200',null,false],
-  ['DRR','Deterra Royalties','200',null,false],['ELD','Elders Limited','200',null,false],
-  ['EMR','Emerald Resources','200',null,false],['FLT','Flight Centre','200',null,false],
-  ['GNC','Graincorp','200',null,false],['GOR','Gold Road Resources','200',null,false],
-  ['ILU','Iluka Resources','200',null,false],['LLC','Lendlease Group','200',null,false],
-  ['NIC','Nickel Industries','200',null,false],['RRL','Regis Resources','200',null,false],
-  ['SCP','Shopping Centres Aust','200',null,false],['SGM','Sims Limited','200',null,false],
-  ['SLR','Silver Lake Resources','200',null,false],['TAH','Tabcorp Holdings','200',null,false],
-  ['RMS','Ramelius Resources','200',null,false],['WAF','West African Resources','200',null,false],
-  ['NHC','New Hope Corporation','200',null,false],['CTD','Corporate Travel Mgmt','200',null,false],
-  ['PPT','Perpetual Limited','200',null,false],['DEG','De Grey Mining','200',null,false],
-  ['CHN','Chalice Mining','200',null,false],['HDN','HomeCo Daily Needs REIT','200',null,false],
-  ['INA','Ingenia Communities','200',null,false],['JLG','Johns Lyng Group','200',null,false],
-  ['MMS','McMillan Shakespeare','200',null,false],['MND','Monadelphous Group','200',null,false],
-  ['NAN','Nanosonics','200',null,false],['PNV','PolyNovo','200',null,false],
-  ['RSG','Resolute Mining','200',null,false],
-  ['ALK','Alkane Resources','300',null,false],['EQR','EQ Resources','300',null,false],
-  ['KCN','Kingsgate Consolidated','300',null,false],['MI6','Minerals 260','300',null,false],
-  ['ELS','Elsight Limited','300',null,false],['GLF','GemLife Communities','300',null,false],
-  ['NGI','Navigator Global','300',null,false],['L1G','L1 Group Limited','300',null,false],
-  ['ARU','Arafura Rare Earths','300',null,false],['SBM','St Barbara','300',null,false],
-  ['C79','Chrysos Corporation','300',null,false],['NXL','Nuix Limited','300',null,false],
-  ['AD8','Audinate Group','300',null,false],['ADH','Adairs Limited','300',null,false],
-  ['STX','Strike Energy','300',null,false],['BRN','BrainChip Holdings','300',null,false],
-  ['BOT','Botanix Pharmaceuticals','300',null,false],['MYX','Mayne Pharma','300',null,false],
-  ['CXO','Core Lithium','300',null,false],['AX1','Accent Group','300',null,false],
-  ['A2M','a2 Milk Company','300',null,false],['GEM','G8 Education','300',null,false],
-  ['BBN','Baby Bunting Group','300',null,false],['BKW','Brickworks','300',null,false],
-  ['CKF','Collins Foods','300',null,false],['GUD','GUD Holdings','300',null,false],
-  ['4DX','4D Medical','none',null,true],['EOS','Electro Optic Systems','none',null,false],
-  ['DPM','DPM Metals','none',null,false],['TCG','Turaco Gold','none',null,false],
-  ['MEK','Meeka Metals','none',null,false],['MAH','Macmahon Holdings','none',null,false],
-  ['CCL','Cuscal Limited','none',null,false],['MLX','Metals X','none',null,false],
-  ['SMI','Santana Minerals','none',null,false],['DTR','Dateline Resources','none',null,false],
-  ['SRL','Sunrise Energy Metals','none',null,false],['VUL','Vulcan Energy','none',null,false],
-  ['SRG','SRG Global','none',null,false],['PDI','Predictive Discovery','none',null,false],
-  ['VAU','Vault Minerals','none',null,false],['LOT','Lotus Resources','none',null,false],
+const SNAP=[
+// [ticker,company,currentIndex,floatCapM,price,sharesM,iwf,mdvtAdm,maFlag]
+["CBA","Commonwealth Bank","20",230000,163.5,1780,1.0,450.0,false],
+["BHP","BHP Group","20",196000,38.2,5120,1.0,380.0,false],
+["CSL","CSL Limited","20",130000,283.0,485,1.0,220.0,false],
+["NAB","National Australia Bank","20",108000,38.5,3320,1.0,280.0,false],
+["WBC","Westpac Banking","20",95000,32.4,3410,1.0,250.0,false],
+["ANZ","ANZ Group Holdings","20",80000,28.9,3100,1.0,230.0,false],
+["WES","Wesfarmers","20",78000,73.5,1130,1.0,180.0,false],
+["MQG","Macquarie Group","20",68000,224.0,385,1.0,160.0,false],
+["RIO","Rio Tinto","20",60000,110.5,660,1.0,140.0,false],
+["WOW","Woolworths Group","20",38000,33.8,1350,1.0,120.0,false],
+["GMG","Goodman Group","20",62000,37.2,1780,1.0,130.0,false],
+["FMG","Fortescue","20",47000,15.8,3060,1.0,120.0,false],
+["TLS","Telstra Group","20",34000,3.92,11600,1.0,95.0,false],
+["TCL","Transurban Group","20",38000,13.6,2920,1.0,90.0,false],
+["ALL","Aristocrat Leisure","20",28000,68.5,418,1.0,85.0,false],
+["REA","REA Group","20",26000,198.0,133,1.0,80.0,false],
+["WTC","Wisetech Global","20",25000,120.5,205,1.0,75.0,false],
+["PME","Pro Medicus","20",16500,197.0,84,1.0,55.0,false],
+["XRO","Xero Limited","20",22000,135.0,164,1.0,70.0,false],
+["COL","Coles Group","20",22000,17.8,1340,1.0,70.0,false],
+["BXB","Brambles Limited","50",20000,17.2,1350,1.0,70.0,false],
+["JHX","James Hardie Industries","50",18000,60.2,370,1.0,62.0,false],
+["SCG","Scentre Group","50",18000,3.52,5840,1.0,62.0,false],
+["QBE","QBE Insurance","50",19000,18.2,1050,1.0,65.0,false],
+["STO","Santos Limited","50",18000,6.85,3060,1.0,60.0,false],
+["SUN","Suncorp Group","50",17000,18.9,1010,1.0,60.0,false],
+["IAG","Insurance Australia Group","50",14000,8.9,1790,1.0,55.0,false],
+["SOL","WH Soul Pattinson","50",14000,33.2,428,1.0,45.0,false],
+["FPH","Fisher Paykel Healthcare","50",14500,28.5,508,1.0,50.0,false],
+["CAR","CAR Group","50",15000,38.9,385,1.0,55.0,false],
+["AMC","Amcor PLC","50",8500,14.8,560,0.15,40.0,false],
+["COH","Cochlear Limited","50",15000,258.0,59,1.0,48.0,false],
+["CPU","Computershare","50",13500,28.8,570,1.0,48.0,false],
+["S32","South32","50",14500,3.22,5100,1.0,52.0,false],
+["EVN","Evolution Mining","50",14000,5.82,1820,1.0,52.0,false],
+["NST","Northern Star Resources","50",13500,16.2,870,1.0,50.0,false],
+["QAN","Qantas Airways","50",13000,8.95,1620,1.0,48.0,false],
+["ORG","Origin Energy","50",16500,10.6,1590,1.0,60.0,false],
+["ALX","Atlas Arteria","50",8500,5.4,1760,1.0,32.0,false],
+["SVW","Seven Group Holdings","50",9200,40.2,236,1.0,35.0,false],
+["APA","APA Group","50",9200,7.6,1490,1.0,38.0,false],
+["GQG","GQG Partners","50",8500,2.28,3860,1.0,35.0,false],
+["RHC","Ramsay Health Care","50",12000,57.5,224,1.0,42.0,false],
+["ALQ","ALS Limited","50",10600,15.8,671,1.0,42.0,false],
+["SEK","Seek Limited","50",8200,24.5,345,1.0,32.0,false],
+["BSL","BlueScope Steel","50",14000,18.3,780,1.0,55.0,false],
+["ORI","Orica Limited","50",10500,19.8,555,1.0,40.0,false],
+["JBH","JB Hi-Fi","50",7500,81.5,100,1.0,32.0,false],
+["LNW","Light and Wonder","50",6500,126.0,120,0.37,30.0,false],
+["NXT","NextDC Limited","50",7800,16.5,472,1.0,32.0,false],
+["MIN","Mineral Resources","100",13000,24.8,580,1.0,55.0,false],
+["SHL","Sonic Healthcare","100",9500,25.2,426,1.0,35.0,false],
+["QUB","QUBE Holdings","100",7800,3.78,2210,1.0,32.0,false],
+["AZJ","Aurizon Holdings","100",7800,3.58,2300,1.0,32.0,false],
+["VCX","Vicinity Centres","100",8800,2.18,4530,1.0,35.0,false],
+["SGP","Stockland","100",8200,4.85,2060,1.0,32.0,false],
+["MGR","Mirvac Group","100",7900,2.18,4150,1.0,30.0,false],
+["GPT","GPT Group","100",7500,4.6,1840,1.0,30.0,false],
+["TNE","Technology One","100",7200,28.2,256,1.0,30.0,false],
+["CHC","Charter Hall Group","100",7200,14.5,590,1.0,32.0,false],
+["WOR","Worley Limited","100",6200,14.8,475,1.0,28.0,false],
+["SFR","Sandfire Resources","100",6200,9.4,660,1.0,30.0,false],
+["HUB","HUB24 Limited","100",6500,71.2,96,1.0,30.0,false],
+["NWL","Netwealth Group","100",5400,27.8,197,1.0,25.0,false],
+["AGL","AGL Energy","100",5400,9.2,780,1.0,25.0,false],
+["PDN","Paladin Energy","100",5200,8.1,645,1.0,32.0,false],
+["LYC","Lynas Rare Earths","100",5800,7.45,780,1.0,30.0,false],
+["RMD","ResMed Inc","100",9500,31.5,430,0.06,35.0,false],
+["CWY","Cleanaway Waste","100",5200,2.98,1920,1.0,22.0,false],
+["DXS","Dexus","100",5800,7.2,870,1.0,25.0,false],
+["IGO","IGO Limited","100",4800,4.28,1170,1.0,28.0,false],
+["PNI","Pinnacle Investment","100",4200,22.5,190,1.0,22.0,false],
+["ANN","Ansell Limited","100",4200,30.5,138,1.0,20.0,false],
+["MTS","Metcash Limited","100",3330,3.18,1560,1.0,22.0,false],
+["360","Life360 Inc","100",3300,21.8,790,0.85,25.0,false],
+["AMP","AMP Limited","100",3250,1.32,3250,1.0,22.0,false],
+["BOQ","Bank of Queensland","100",4500,5.85,910,1.0,25.0,false],
+["BEN","Bendigo Adelaide Bank","100",5800,12.6,533,1.0,28.0,false],
+["TWE","Treasury Wine Estates","100",3200,9.8,780,1.0,22.0,false],
+["YAL","Yancoal Australia","100",5200,5.2,1320,1.0,25.0,false],
+["EBO","EBOS Group","100",7500,33.8,223,1.0,28.0,false],
+["NSR","National Storage REIT","100",3800,2.68,1650,1.0,20.0,false],
+["IPH","IPH Limited","100",2200,5.8,382,1.0,15.0,false],
+["NHF","nib holdings","100",3500,7.1,523,1.0,18.0,false],
+["NWH","NRW Holdings","100",3600,3.85,950,1.0,20.0,false],
+["DOW","Downer EDI","100",4800,6.95,710,1.0,25.0,false],
+["SUL","Super Retail Group","100",4200,14.8,291,1.0,22.0,false],
+["BAP","Bapcor Limited","100",2800,5.1,556,1.0,18.0,false],
+["ARB","ARB Corporation","100",3200,35.2,94,1.0,18.0,false],
+["RWC","Reliance Worldwide","100",4500,4.85,1030,1.0,22.0,false],
+["VEA","Viva Energy Group","100",5600,2.88,2250,1.0,25.0,false],
+["CDA","Codan Limited","100",3800,19.2,200,1.0,20.0,false],
+["CCP","Credit Corp Group","100",1900,16.2,121,1.0,15.0,false],
+["ALD","Ampol Limited","100",4800,28.5,168,1.0,20.0,false],
+["AUB","AUB Group","100",3500,28.5,124,1.0,20.0,false],
+["SDF","Steadfast Group","100",5200,6.12,850,1.0,22.0,false],
+["IFT","Infratil Limited","100",6200,11.2,554,1.0,22.0,false],
+["BLD","Boral Limited","100",5200,6.52,798,1.0,22.0,false],
+["AIA","Auckland Intl Airport","100",7200,7.45,966,1.0,24.0,false],
+["JHG","Janus Henderson Group","100",9500,51.2,186,0.5,30.0,false],
+["TLX","Telix Pharmaceuticals","200",8500,26.8,317,1.0,35.0,false],
+["MPL","Medibank Private","200",10500,3.78,2780,1.0,38.0,false],
+["HVN","Harvey Norman","200",4800,5.12,1060,1.0,22.0,false],
+["FLT","Flight Centre","200",4200,19.8,219,1.0,22.0,false],
+["PLS","Pilbara Minerals","200",5800,2.08,2980,1.0,28.0,false],
+["LLC","Lendlease Group","200",4200,10.2,468,1.0,22.0,false],
+["DEG","De Grey Mining","200",4200,1.58,2660,1.0,22.0,false],
+["WHC","Whitehaven Coal","200",5500,6.98,880,1.0,28.0,false],
+["PRU","Perseus Mining","200",4200,2.98,1410,1.0,22.0,false],
+["CGF","Challenger Limited","200",4500,7.28,690,1.0,22.0,false],
+["RRL","Regis Resources","200",3500,3.12,1120,1.0,20.0,false],
+["PMV","Premier Investments","200",3800,23.5,164,1.0,20.0,false],
+["CMM","Capricorn Metals","200",3200,6.82,469,1.0,18.0,false],
+["EMR","Emerald Resources","200",3500,4.35,805,1.0,20.0,false],
+["DRR","Deterra Royalties","200",3500,4.15,890,1.0,20.0,false],
+["GOR","Gold Road Resources","200",3400,2.35,1450,1.0,18.0,false],
+["LOV","Lovisa Holdings","200",3200,29.5,108,1.0,18.0,false],
+["RMS","Ramelius Resources","200",3800,2.68,1420,1.0,20.0,false],
+["WAF","West African Resources","200",3400,1.46,2330,1.0,18.0,false],
+["WGX","Westgold Resources","200",2720,4.28,635,1.0,18.0,false],
+["NHC","New Hope Corporation","200",3800,4.82,850,1.0,20.0,false],
+["CTD","Corporate Travel Mgmt","200",3200,16.8,192,1.0,18.0,false],
+["ILU","Iluka Resources","200",2800,5.12,584,1.0,16.0,false],
+["GNC","Graincorp","200",1800,7.12,251,1.0,12.0,false],
+["ELD","Elders Limited","200",1800,8.8,209,1.0,12.0,false],
+["SCP","Shopping Centres Aust","200",2800,2.58,1250,1.0,16.0,false],
+["SGM","Sims Limited","200",2500,9.8,260,1.0,16.0,false],
+["TAH","Tabcorp Holdings","200",2800,0.62,4800,1.0,18.0,false],
+["PPT","Perpetual Limited","200",1800,18.4,98,1.0,12.0,false],
+["NIC","Nickel Industries","200",2800,0.945,3000,1.0,18.0,false],
+["BPT","Beach Energy","200",2200,1.32,2000,1.0,15.0,false],
+["ORA","Orora Limited","200",2500,2.28,1280,1.0,16.0,false],
+["SLR","Silver Lake Resources","200",2200,2.38,924,1.0,15.0,false],
+["INA","Ingenia Communities","200",2500,5.42,460,1.0,15.0,false],
+["JLG","Johns Lyng Group","200",2200,5.18,424,1.0,15.0,false],
+["MMS","McMillan Shakespeare","200",2100,19.5,110,1.0,14.0,false],
+["HDN","HomeCo Daily Needs REIT","200",2800,1.28,2380,1.0,16.0,false],
+["MAQ","Macquarie Telecom","200",2400,73.2,33,1.0,15.0,false],
+["ARF","Arena REIT","200",2100,3.85,618,1.0,15.0,false],
+["MFG","Magellan Financial","200",2400,9.2,280,1.0,15.0,false],
+["NCK","Nick Scali","200",1600,14.2,113,1.0,12.0,false],
+["LIC","Lifestyle Communities","200",1500,11.2,134,1.0,12.0,false],
+["ABB","Aussie Broadband","200",1700,3.45,490,1.0,12.0,false],
+["MND","Monadelphous Group","200",1900,13.6,140,1.0,12.0,false],
+["MP1","Megaport Limited","200",1500,5.4,278,1.0,12.0,false],
+["PNV","PolyNovo","200",1900,2.45,775,1.0,12.0,false],
+["NAN","Nanosonics","200",1200,2.85,420,1.0,10.0,false],
+["RSG","Resolute Mining","200",1400,0.535,2620,1.0,10.0,false],
+["IRE","IRESS Limited","200",1800,8.5,212,1.0,12.0,false],
+["WEB","WEB Travel Group","200",1800,4.85,372,1.0,12.0,false],
+["DDR","Dicker Data","200",1080,5.42,199,1.0,9.0,false],
+["DTL","Data3 Limited","200",1050,5.71,184,1.0,9.0,false],
+["SLC","Superloop Limited","200",1200,1.48,810,1.0,10.0,false],
+["SIQ","Smartgroup Corp","200",1200,7.5,164,1.0,10.0,false],
+["DVP","Develop Global","200",1150,1.85,621,1.0,10.0,false],
+["FFM","FireFly Metals","200",1160,0.158,7320,1.0,10.0,false],
+["ELV","Elevra Lithium","200",1170,0.124,9450,1.0,10.0,false],
+["IEL","IDP Education","200",1100,1.59,693,1.0,10.0,false],
+["DMP","Dominos Pizza","200",1190,13.5,88,1.0,12.0,false],
+["SSM","Service Stream","200",1200,1.38,880,1.0,10.0,false],
+["NEC","Nine Entertainment","200",1170,0.509,2300,1.0,25.0,false],
+["PNR","Pantoro Gold","200",1200,1.28,938,1.0,10.0,false],
+["TPW","Temple Webster","200",690,7.26,95,1.0,10.0,false],
+["GYG","Guzman y Gomez","200",940,8.32,113,1.0,18.0,false],
+["SDR","SiteMinder Limited","200",2200,5.1,435,1.0,15.0,true],
+["COF","Centuria Office REIT","200",447,0.339,1320,1.0,5.0,false],
+["A2M","a2 Milk Company","200",2800,5.72,490,1.0,18.0,false],
+["MEZ","Meridian Energy","200",6500,5.02,1295,1.0,20.0,false],
+["SPK","Spark New Zealand","200",5200,2.98,1745,1.0,20.0,false],
+["MCY","Mercury NZ","200",4200,6.18,679,1.0,16.0,false],
+["CNU","Chorus Limited","200",2200,8.42,261,1.0,12.0,false],
+["FBU","Fletcher Building","200",2200,3.72,591,1.0,14.0,false],
+["CHN","Chalice Mining","200",1200,2.28,526,1.0,10.0,false],
+["REG","Regis Healthcare","200",1190,1.62,820,1.0,10.0,false],
+["HLS","Healius Limited","200",1300,1.58,823,1.0,9.0,false],
+["CSR","CSR Limited","200",2500,8.85,283,1.0,14.0,false],
+["GWA","GWA Group","200",850,2.38,357,1.0,6.0,false],
+["ECX","Eclipx Group","200",1200,2.28,526,1.0,8.0,false],
+["LFS","Latitude Group","200",1500,0.985,1523,1.0,9.0,false],
+["SGF","SG Fleet Group","200",800,3.35,239,1.0,6.0,false],
+["FPR","FleetPartners Group","200",950,3.18,299,1.0,7.0,false],
+["SRG","SRG Global","200",900,1.12,804,1.0,8.0,false],
+["GNP","GenusPlus Group","200",500,1.58,316,1.0,4.0,false],
+["MYR","Myer Holdings","200",900,0.56,1607,1.0,8.0,false],
+["ACL","Australian Clinical Labs","200",650,2.15,302,1.0,5.0,false],
+["MVF","Monash IVF Group","200",700,1.35,519,1.0,5.0,false],
+["CUV","Clinuvel Pharmaceuticals","200",1000,17.8,56,1.0,6.0,false],
+["OML","Ooh!Media Limited","200",650,1.12,580,1.0,5.0,false],
+["KGN","Kogan.com","200",750,7.45,101,1.0,6.0,false],
+["TYR","Tyro Payments","200",750,0.75,1000,1.0,6.0,false],
+["PSQ","Pacific Smiles","200",450,1.55,290,1.0,4.0,false],
+["MNY","MONEY3 Corporation","200",350,2.18,161,1.0,3.0,false],
+["PPE","People Infrastructure","200",450,3.12,144,1.0,4.0,false],
+["AFG","Australian Finance Group","200",480,1.55,310,1.0,4.0,false],
+["IDX","Integral Diagnostics","200",700,2.42,289,1.0,6.0,false],
+["CAJ","Capitol Health","200",400,0.345,1159,1.0,4.0,false],
+["ALK","Alkane Resources","300",1570,1.44,1090,1.0,12.0,false],
+["GLF","GemLife Communities","300",1424,2.09,680,1.0,10.0,false],
+["NGI","Navigator Global","300",1290,2.63,490,1.0,10.0,false],
+["EQR","EQ Resources","300",1270,0.099,12800,1.0,10.0,false],
+["KCN","Kingsgate Consolidated","300",1250,3.16,395,1.0,10.0,false],
+["ELS","Elsight Limited","300",1230,4.76,258,1.0,10.0,false],
+["MI6","Minerals 260","300",1230,0.198,6200,1.0,10.0,false],
+["L1G","L1 Group Limited","300",1055,2.51,420,1.0,9.0,false],
+["ARU","Arafura Rare Earths","300",1045,0.117,8900,1.0,8.0,false],
+["C79","Chrysos Corporation","300",1100,8.5,129,1.0,9.0,false],
+["AFI","Australian Foundation Inv","300",8500,7.25,1310,1.0,20.0,false],
+["ARG","Argo Investments","300",4200,9.32,450,1.0,15.0,false],
+["MLT","Milton Corporation","300",3800,5.18,733,1.0,12.0,false],
+["LSF","L1 Long Short Fund","300",1600,1.68,952,1.0,8.0,false],
+["CQR","Charter Hall Retail REIT","300",2800,3.82,733,1.0,14.0,false],
+["CLW","Charter Hall Long Wale","300",1900,3.08,617,1.0,10.0,false],
+["CIP","Centuria Industrial REIT","300",3200,3.18,1006,1.0,14.0,false],
+["GOZ","Growthpoint Properties","300",1800,2.28,790,1.0,10.0,false],
+["HMC","HomeCo Limited","300",2200,7.12,309,1.0,12.0,false],
+["BWP","BWP Trust","300",2600,3.18,818,1.0,12.0,false],
+["GNE","Genesis Energy","300",1800,2.78,647,1.0,10.0,false],
+["SNZ","Summerset Group","300",1600,8.12,197,1.0,8.0,false],
+["IFL","Insignia Financial","300",1500,2.68,560,1.0,9.0,false],
+["LTR","Liontown Resources","300",2200,0.755,2914,1.0,14.0,false],
+["NVX","NOVONIX Limited","300",600,0.88,682,1.0,6.0,false],
+["CXL","CALIX Limited","300",800,3.85,208,1.0,7.0,false],
+["CRN","Coronado Global Resources","300",1800,0.82,2195,0.6,12.0,false],
+["IMD","IMDEX Limited","300",1200,2.28,526,1.0,8.0,false],
+["EHL","Emeco Holdings","300",750,0.785,956,1.0,6.0,false],
+["MAH","Macmahon Holdings","300",756,0.27,2800,1.0,7.0,false],
+["DDH","DDH1 Limited","300",600,1.28,469,1.0,5.0,false],
+["DBI","Dalrymple Bay Infra","300",1200,2.38,504,1.0,7.0,false],
+["APE","Eagers Automotive","300",2200,10.5,210,1.0,14.0,false],
+["BKW","Brickworks","300",2800,23.5,120,1.0,15.0,false],
+["CKF","Collins Foods","300",1200,8.8,136,1.0,9.0,false],
+["GUD","GUD Holdings","300",1500,11.2,134,1.0,10.0,false],
+["UNI","Universal Store","300",580,8.12,71,1.0,5.0,false],
+["CTT","Cettire Limited","300",700,1.58,443,1.0,6.0,false],
+["WAM","WAM Capital","300",1200,1.88,638,1.0,8.0,false],
+["WLE","WAM Leaders","300",1400,1.52,921,1.0,9.0,false],
+["MFF","MFF Capital Investments","300",1800,3.45,521,1.0,8.0,false],
+["PTM","Platinum Asset Mgmt","300",900,1.38,652,1.0,7.0,false],
+["CMW","Cromwell Property","300",900,0.485,1856,1.0,6.0,false],
+["ABG","Abacus Group","300",1500,1.22,1230,1.0,9.0,false],
+["PDL","Pendal Group","300",1400,4.52,310,1.0,9.0,false],
+["MCR","Mincor Resources","300",650,0.485,1340,1.0,5.0,false],
+["ZIM","Zimplats Holdings","300",1400,14.2,99,0.35,6.0,false],
+["HSN","Hansen Technologies","300",1500,7.42,202,1.0,9.0,false],
+["ABC","Adbri Limited","300",1600,3.35,477,1.0,10.0,false],
+["SBM","St Barbara","300",950,0.185,5140,1.0,8.0,false],
+["SWM","Seven West Media","300",600,0.245,2449,1.0,6.0,false],
+["HT1","HT&E Limited","300",480,1.68,286,1.0,4.0,false],
+["SXL","Southern Cross Media","300",380,0.212,1792,1.0,4.0,false],
+["NXL","Nuix Limited","300",431,0.716,602,1.0,6.0,false],
+["AD8","Audinate Group","300",317,1.278,248,1.0,5.0,false],
+["ADH","Adairs Limited","300",319,0.676,472,1.0,5.0,false],
+["STX","Strike Energy","300",351,0.098,3600,1.0,5.0,false],
+["BRN","BrainChip Holdings","300",367,0.037,9800,1.0,5.0,false],
+["CXO","Core Lithium","300",600,0.122,4900,1.0,6.0,false],
+["AX1","Accent Group","300",459,0.528,870,1.0,5.0,false],
+["GEM","G8 Education","300",550,1.28,430,1.0,6.0,false],
+["BBN","Baby Bunting Group","300",450,1.95,231,1.0,5.0,false],
+["BKI","BKI Investment","300",800,1.62,494,1.0,6.0,false],
+["PPH","Pushpay Holdings","300",1100,0.895,1229,1.0,7.0,false],
+["PPT2","Praemium Limited","300",350,0.545,642,1.0,3.0,false],
+["EQT","EQT Holdings","300",700,2.82,248,1.0,5.0,false],
+["OCA","Oceania Healthcare","300",480,0.775,619,1.0,5.0,false],
+["AIZ","Air New Zealand","300",900,0.625,1440,1.0,6.0,false],
+["KMD","Kathmandu Holdings","300",450,0.592,760,1.0,5.0,false],
+["HPG","Heartland Group","300",850,1.28,664,1.0,6.0,false],
+["RBD","Restaurant Brands NZ","300",400,3.42,117,1.0,4.0,false],
+["SKO","Serko Limited","300",480,2.88,167,1.0,5.0,false],
+["BOT","Botanix Pharmaceuticals","300",244,0.076,3200,1.0,4.0,false],
+["MYX","Mayne Pharma","300",247,0.055,4500,1.0,4.0,false],
+["QRI","Qualitas Real Estate IF","300",750,1.58,475,1.0,5.0,false],
+["WMI","WAM Microcap","300",380,1.42,268,1.0,4.0,false],
+["HM1","Hearts & Minds Inv","300",600,3.12,192,1.0,5.0,false],
+["IMM","Immutep Limited","300",450,0.215,2093,1.0,4.0,false],
+["PAR","Paradigm Biopharmaceuticals","300",350,0.5,700,1.0,3.0,false],
+["OPT","Opthea Limited","300",300,0.52,577,1.0,3.0,false],
+["PGF","PM Capital Global Opps","300",460,1.5,307,1.0,4.0,false],
+["PNI2","PNI Placeholder","300",420,2.21,190,1.0,4.0,false],
+["CCL","Cuscal Limited","300",740,3.02,245,1.0,6.0,false],
+["SLX","Silex Systems","300",750,4.28,175,1.0,6.0,false],
+["MMA","MMA Offshore","300",1100,2.78,396,1.0,8.0,false],
+["A4N","Alpha HPA","300",950,1.58,601,1.0,7.0,false],
+["PPC","Peet Limited","300",550,1.35,407,1.0,4.0,false],
+["CWP","Cedar Woods Properties","300",450,5.12,88,1.0,3.0,false],
+["MLX","Metals X","300",719,0.189,3800,1.0,6.0,false],
+["ECX2","Electro Copper","300",500,1.12,446,1.0,4.0,false],
+["NHC2","NRW Small Cap","300",480,0.985,487,1.0,4.0,false],
+["DUI","Diversified United Inv","300",500,4.35,115,1.0,4.0,false],
+["MIR","Mirrabooka Investments","300",580,3.12,186,1.0,4.0,false],
+["SWK","Swick Mining Services","300",300,0.845,355,1.0,3.0,false],
+["WPP","WPP AUNZ","300",420,0.285,1474,1.0,4.0,false],
+["URW","Unibail-Rodamco-Westfield","300",2200,5.85,376,0.12,10.0,false],
+["4DX","4D Medical","none",2500,3.87,645,1.0,12.0,true],
+["EOS","Electro Optic Systems","none",1480,4.61,321,1.0,10.0,false],
+["DPM","DPM Metals","none",1003,2.39,420,1.0,8.0,false],
+["TCG","Turaco Gold","none",779,0.472,1650,1.0,7.0,false],
+["MEK","Meeka Metals","none",769,0.366,2100,1.0,7.0,false],
+["SMI","Santana Minerals","none",706,0.368,1920,1.0,6.0,false],
+["DTR","Dateline Resources","none",706,0.0136,51900,1.0,5.0,false],
+["VAU","Vault Minerals","none",780,0.244,3200,1.0,7.0,false],
+["LOT","Lotus Resources","none",450,0.165,2730,1.0,4.0,false],
+["PDI","Predictive Discovery","none",450,0.165,2730,1.0,4.0,false],
+["SRL","Sunrise Energy Metals","none",500,0.52,960,1.0,5.0,false],
+["VUL","Vulcan Energy","none",800,4.52,177,1.0,7.0,false],
+["NXG","NexGen Energy","none",3200,11.2,286,0.85,14.0,false],
+["SLM","Sievert Laryngoscope","none",650,2.48,262,1.0,5.0,false],
+["RNU","Renascor Resources","none",350,0.075,4667,1.0,3.0,false],
+["AIS","Aeris Resources","none",320,0.285,1123,1.0,3.0,false],
+["WAM2","WAM Alternative Assets","none",380,1.25,304,1.0,3.0,false],
+["FGX","Future Generation Inv","none",580,1.38,420,1.0,4.0,false],
+["FGG","Future Gen Global Inv","none",480,1.52,316,1.0,4.0,false],
+["ACR","Acrux Limited","none",200,0.285,702,1.0,2.0,false],
+["PHL","Propel Funeral Partners","none",480,3.78,127,1.0,4.0,false],
+["GAL","Galileo Mining","none",650,1.85,351,1.0,5.0,false],
+["WGB","WAM Global","none",500,2.38,210,1.0,4.0,false],
+["SFX","Sheffield Resources","none",280,0.395,709,1.0,2.0,false],
+["NXS","NextGen Networks","none",380,1.58,241,1.0,3.0,false],
+["PGD","Pearl Gull Iron","none",220,0.195,1128,1.0,2.0,false],
+["MCP","Metcash Placeholder","none",480,2.18,220,1.0,4.0,false],
+["RGI","Ramelius Group Sub","none",800,1.45,552,1.0,6.0,false],
+["DEL","Delorean Corporation","none",280,0.485,577,1.0,2.0,false],
+["NCZ","New Century Resources","none",260,0.285,912,1.0,2.0,false],
+["SIR","Sirius Resources","none",350,0.245,1429,1.0,3.0,false],
+["LNK","Link Administration","200",1900,2.28,834,1.0,12.0,false],
+["NUF","Nufarm Limited","200",1600,3.98,402,1.0,10.0,false],
+["SIG","Sigma Healthcare","200",2800,0.985,2843,1.0,18.0,false],
+["ALD2","Alumina Limited","200",1800,1.38,1304,1.0,12.0,false],
+["WOR2","Worley Small","300",820,3.18,258,1.0,6.0,false],
+["HPI","Hotel Property Investments","300",780,3.68,212,1.0,5.0,false],
+["AOF","Aust Unity Office Fund","300",650,2.12,307,1.0,4.0,false],
+["GDF","Garda Div Comm REIT","300",400,1.32,303,1.0,3.0,false],
 ];
+const SNAP_DATE='22 Apr 2026';
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
-const BUFFERS = {'20':{add:14,del:26},'50':{add:39,del:61},'100':{add:84,del:116},'200':{add:179,del:221},'300':{add:274,del:326}};
-const RL_MIN = {'20':50,'50':50,'100':50,'200':50,'300':30};
-const RL_REM = {'20':25,'50':25,'100':25,'200':25,'300':15};
-const AUM_DEF = {'20':8,'50':15,'100':25,'200':80,'300':15};
-const PROXIES = [
-  u => 'https://corsproxy.io/?' + encodeURIComponent(u),
-  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
-];
-let WPRX = 0;
-const G = { stocks: {}, lastFetch: 0, timer: null };
+const BUFFERS={'20':{add:14,del:26},'50':{add:39,del:61},'100':{add:84,del:116},'200':{add:179,del:221},'300':{add:274,del:326}};
+const RL_MIN={'20':50,'50':50,'100':50,'200':50,'300':30};
+const RL_REM={'20':25,'50':25,'100':25,'200':25,'300':15};
+const AUM_DEF={'20':8,'50':15,'100':25,'200':80,'300':15};
+const G={stocks:{}};
 
-// ─── DATES ───────────────────────────────────────────────────────────────────
-const HOLS = new Set(['2025-01-01','2025-01-27','2025-04-18','2025-04-21','2025-04-25','2025-06-09','2025-12-25','2025-12-26','2026-01-01','2026-01-26','2026-04-03','2026-04-06','2026-04-07','2026-04-25','2026-06-08','2026-12-25','2026-12-28','2027-01-01','2027-01-26','2027-03-26','2027-03-29','2027-04-26','2027-06-14','2027-12-27','2027-12-28']);
-function isTD(d){const w=d.getDay();return w>0&&w<6&&!HOLS.has(d.toISOString().split('T')[0]);}
-function nthFri(y,m,n){const d=new Date(y,m-1,1);let f=0;while(true){if(d.getDay()===5){f++;if(f===n)return new Date(d);}d.setDate(d.getDate()+1);}}
-function s2lFri(y,m){const fr=[];const d=new Date(y,m-1,1);while(d.getMonth()===m-1){if(d.getDay()===5)fr.push(new Date(d));d.setDate(d.getDate()+1);}return fr[fr.length-2];}
-function cTD(s,e){let c=0;const d=new Date(s);while(d<=e){if(isTD(d))c++;d.setDate(d.getDate()+1);}return c;}
-function getDates(){
-  const today=new Date();let ann,yr,mo;
-  for(const m of[3,6,9,12]){const a=nthFri(today.getFullYear(),m,1);if(a>today){ann=a;yr=today.getFullYear();mo=m;break;}}
-  if(!ann){yr=today.getFullYear()+1;mo=3;ann=nthFri(yr,mo,1);}
-  const eff=nthFri(yr,mo,3),pm=mo===1?12:mo-1,py=mo===1?yr-1:yr,refEnd=s2lFri(py,pm);
-  const rs=new Date(refEnd);rs.setDate(rs.getDate()-95);while(!isTD(rs))rs.setDate(rs.getDate()+1);
-  const total=cTD(rs,refEnd),now=today<rs?rs:today>refEnd?refEnd:today,elapsed=cTD(rs,now);
-  const tom=new Date(today);tom.setDate(tom.getDate()+1);
-  return{rs,refEnd,ann,eff,total,elapsed,rem:tom>refEnd?0:cTD(tom,refEnd),pct:Math.round(elapsed/total*100)};
-}
-const D = getDates();
-
-// ─── FETCH ───────────────────────────────────────────────────────────────────
-async function fetchProxy(url, att) {
-  att = att || 0;
-  if (att >= PROXIES.length * 2) throw new Error('All proxies failed');
-  const pi = (WPRX + att) % PROXIES.length;
-  try {
-    const r = await fetch(PROXIES[pi](url), {signal: AbortSignal.timeout(18000)});
-    if (r.status === 429) { WPRX = (WPRX + 1) % PROXIES.length; await sleep(1500 * (att + 1)); return fetchProxy(url, att + 1); }
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    WPRX = pi;
-    return await r.json();
-  } catch(e) { await sleep(700); return fetchProxy(url, att + 1); }
-}
-
-async function startFetch() {
-  const btn = document.getElementById('fetch-btn');
-  btn.textContent = 'Fetching...'; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none';
-  document.getElementById('fpbar').classList.add('show');
-  document.getElementById('fpfill').style.width = '5%';
-  const tickers = UNI.map(function(u){ return u[0]; });
-  const BSIZ = 80;
-  for (let i = 0; i < tickers.length; i += BSIZ) {
-    const batch = tickers.slice(i, i + BSIZ);
-    const syms = batch.map(function(t){ return t + '.AX'; }).join(',');
-    const url = 'https://query2.finance.yahoo.com/v7/finance/quote?symbols=' + syms + '&fields=regularMarketPrice,regularMarketPreviousClose,regularMarketChangePercent,marketCap,sharesOutstanding,floatShares,averageDailyVolume3Month,shortName';
-    try {
-      const data = await fetchProxy(url);
-      const quotes = (data && data.quoteResponse && data.quoteResponse.result) ? data.quoteResponse.result : [];
-      for (let q = 0; q < quotes.length; q++) {
-        const quote = quotes[q];
-        const tkr = quote.symbol.replace('.AX', '');
-        const uEntry = UNI.find(function(u){ return u[0] === tkr; });
-        if (!uEntry) continue;
-        const sharesRaw = quote.sharesOutstanding || 0;
-        const floatRaw = quote.floatShares || sharesRaw;
-        const iwfOvr = uEntry[3];
-        const iwf = (iwfOvr !== null && iwfOvr !== undefined) ? iwfOvr : (sharesRaw ? Math.min(floatRaw / sharesRaw, 1.0) : 1.0);
-        const mktCapM = (quote.marketCap || 0) / 1e6;
-        const floatCapM = mktCapM * iwf;
-        const price = quote.regularMarketPrice || 0;
-        const avgVol = quote.averageDailyVolume3Month || 0;
-        G.stocks[tkr] = {
-          price: price,
-          prevClose: quote.regularMarketPreviousClose || price,
-          chgPct: quote.regularMarketChangePercent || 0,
-          mktCapM: mktCapM,
-          floatCapM: floatCapM,
-          sharesM: +(sharesRaw / 1e6).toFixed(2),
-          floatM: +(floatRaw / 1e6).toFixed(2),
-          iwf: +iwf.toFixed(4),
-          mdvtAdm: +(price * avgVol / 1e6).toFixed(3),
-          name: quote.shortName || tkr,
-          rl: 0,
-          rank: {}
-        };
-      }
-    } catch(e) { console.warn('Batch failed:', e.message); }
-    document.getElementById('fpfill').style.width = Math.round((i + BSIZ) / tickers.length * 90) + '%';
-    if (i + BSIZ < tickers.length) await sleep(350);
+function build(){
+  G.stocks={};
+  for(var i=0;i<SNAP.length;i++){
+    var s=SNAP[i];
+    G.stocks[s[0]]={price:s[4],floatCapM:s[3],sharesM:s[5],iwf:s[6],mdvtAdm:s[7],company:s[1],currentIndex:s[2],maFlag:s[8],rl:0,rank:{}};
   }
-  calcRL();
-  assignRanks();
-  G.lastFetch = Date.now();
-  document.getElementById('fpfill').style.width = '100%';
-  setTimeout(function(){ document.getElementById('fpbar').classList.remove('show'); document.getElementById('fpfill').style.width = '0%'; }, 600);
-  btn.textContent = '↺ Fetch Live'; btn.style.opacity = ''; btn.style.pointerEvents = '';
-  saveCache();
-  renderAll();
-  updateBadge();
-  if (!G.timer) G.timer = setInterval(startFetch, 60000);
-}
-function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
-
-// ─── RELATIVE LIQUIDITY ──────────────────────────────────────────────────────
-function calcRL() {
-  const stks = Object.values(G.stocks).filter(function(s){ return s.floatCapM > 0; });
-  for (let i = 0; i < stks.length; i++) stks[i]._sml = stks[i].floatCapM > 0 ? stks[i].mdvtAdm / stks[i].floatCapM : 0;
-  const totFMC = stks.reduce(function(a,s){ return a + s.floatCapM; }, 0);
-  const mktLiq = totFMC > 0 ? stks.reduce(function(a,s){ return a + s._sml * (s.floatCapM / totFMC); }, 0) : 0;
-  for (let i = 0; i < stks.length; i++) stks[i].rl = mktLiq > 0 ? +(stks[i]._sml / mktLiq * 100).toFixed(1) : 0;
+  calcRL();ranks();
 }
 
-// ─── ASSIGN RANKS ────────────────────────────────────────────────────────────
-function assignRanks() {
-  const sorted = Object.keys(G.stocks).filter(function(t){ return G.stocks[t].floatCapM > 0; });
-  sorted.sort(function(a, b){ return G.stocks[b].floatCapM - G.stocks[a].floatCapM; });
-  const indices = ['20','50','100','200','300'];
-  for (let ii = 0; ii < indices.length; ii++) {
-    const idx = indices[ii];
-    const minRL = RL_MIN[idx];
-    let r = 1;
-    for (let i = 0; i < sorted.length; i++) {
-      const s = G.stocks[sorted[i]];
-      if (s.rl >= minRL) { s.rank[idx] = r; r++; }
-      else { s.rank[idx] = null; }
-    }
-  }
+function calcRL(){
+  var stks=Object.values(G.stocks).filter(function(s){return s.floatCapM>0;});
+  stks.forEach(function(s){s._sml=s.mdvtAdm/s.floatCapM;});
+  var tot=stks.reduce(function(a,s){return a+s.floatCapM;},0);
+  var ml=tot>0?stks.reduce(function(a,s){return a+s._sml*(s.floatCapM/tot);},0):0;
+  stks.forEach(function(s){s.rl=ml>0?+(s._sml/ml*100).toFixed(1):0;});
 }
 
-// ─── stockIsInIndex ──────────────────────────────────────────────────────────
-// ciStr = the stock's currentIndex field, e.g. '50', '200', 'none'
-// idx   = the index we are checking membership of, e.g. '200'
-// A stock with currentIndex='50' IS in ASX200 because 50 <= 200
-// A stock with currentIndex='200' is NOT in ASX100 because 200 > 100
-function stockIsInIndex(ciStr, idx) {
-  if (!ciStr || ciStr === 'none') return false;
-  const ci = parseInt(ciStr, 10);
-  const ii = parseInt(idx, 10);
-  return ci > 0 && ci <= ii;
-}
-
-// ─── CLASSIFY ────────────────────────────────────────────────────────────────
-function classify(ticker, idx) {
-  const s = G.stocks[ticker];
-  if (!s || !s.floatCapM) return null;
-  const uEntry = UNI.find(function(u){ return u[0] === ticker; });
-  if (!uEntry) return null;
-  const maFlag = uEntry[4];
-  const ciStr  = uEntry[2];
-  const rank   = s.rank[idx];   // number or null
-  const buf    = BUFFERS[idx];
-  const inIdx  = stockIsInIndex(ciStr, idx);
-
-  // M&A targets cannot enter an index
-  if (maFlag && !inIdx) return null;
-  // No rank = fails RL gate
-  if (rank === null || rank === undefined) return null;
-
-  if (!inIdx) {
-    // Non-constituent — check for ADDITION
-    if (rank <= buf.add)       return 'strong_add';
-    if (rank <= buf.add + 25)  return 'poss_add';
-    if (rank <= buf.add + 50)  return 'watch_add';
-    return null;
-  } else {
-    // Current constituent — check for REMOVAL
-    if (s.rl < RL_REM[idx]) return 'liq_rem';
-    if (rank >= buf.del)       return 'strong_rem';
-    if (rank >= buf.del - 25)  return 'poss_rem';
-    if (rank >= buf.del - 50)  return 'watch_rem';
-    return null;
-  }
-}
-
-// ─── GET CANDIDATES ──────────────────────────────────────────────────────────
-function getCands(idx, removal) {
-  const result = [];
-  for (let i = 0; i < UNI.length; i++) {
-    const u = UNI[i];
-    if (!G.stocks[u[0]]) continue;
-    const cl = classify(u[0], idx);
-    if (!cl) continue;
-    const isRem = cl.includes('rem') || cl === 'liq_rem';
-    if (removal !== isRem) continue;
-    result.push(u);
-  }
-  result.sort(function(a, b) {
-    const ra = (G.stocks[a[0]] && G.stocks[a[0]].rank[idx]) ? G.stocks[a[0]].rank[idx] : 9999;
-    const rb = (G.stocks[b[0]] && G.stocks[b[0]].rank[idx]) ? G.stocks[b[0]].rank[idx] : 9999;
-    return removal ? rb - ra : ra - rb;
+function ranks(){
+  var sorted=Object.keys(G.stocks).filter(function(t){return G.stocks[t].floatCapM>0;});
+  sorted.sort(function(a,b){return G.stocks[b].floatCapM-G.stocks[a].floatCapM;});
+  ['20','50','100','200','300'].forEach(function(idx){
+    var minRL=RL_MIN[idx],r=1;
+    sorted.forEach(function(t){var s=G.stocks[t];if(s.rl>=minRL){s.rank[idx]=r++;}else{s.rank[idx]=null;}});
   });
-  return result;
 }
 
-// ─── PTI ─────────────────────────────────────────────────────────────────────
-function calcPTI(ticker, idx) {
-  const s = G.stocks[ticker];
-  if (!s || !s.price || !s.sharesM || !D.rem || !D.total) return null;
-  const buf = BUFFERS[idx];
-  const eligible = Object.keys(G.stocks).filter(function(t){ return G.stocks[t].rank[idx] !== null && G.stocks[t].rank[idx] !== undefined; });
-  eligible.sort(function(a,b){ return G.stocks[a].rank[idx] - G.stocks[b].rank[idx]; });
-  const borderTicker = eligible[buf.add - 1];
-  if (!borderTicker) return null;
-  const targetFMC   = G.stocks[borderTicker].floatCapM;
-  const fmcAccum    = s.floatCapM * D.elapsed;
-  const reqRemFMC   = targetFMC * D.total - fmcAccum;
-  const reqDailyFMC = reqRemFMC / D.rem;
-  const reqPrice    = reqDailyFMC / (s.sharesM * s.iwf);
-  if (reqPrice <= 0) return null;
-  const pctMove = s.price > 0 ? (reqPrice - s.price) / s.price * 100 : null;
-  return { reqPrice: +reqPrice.toFixed(3), pctMove: pctMove !== null ? +pctMove.toFixed(1) : null, targetFMC: targetFMC, borderTicker: borderTicker };
+// Stock with currentIndex='50' IS IN ASX200 because 50<=200
+function inIdx(ci,idx){
+  if(!ci||ci==='none')return false;
+  return parseInt(ci,10)>0&&parseInt(ci,10)<=parseInt(idx,10);
 }
 
-// ─── PASSIVE FLOW ─────────────────────────────────────────────────────────────
-function calcFlow(ticker, idx) {
-  const s = G.stocks[ticker];
-  if (!s || !s.price || !s.floatCapM) return {sharesM:0, adm:0, dtc:0};
-  const aumBn = parseFloat((document.getElementById('aum' + idx) || {value: AUM_DEF[idx]}).value || AUM_DEF[idx]);
-  const aum = aumBn * 1e9;
-  let idxFMC = 0;
-  for (let i = 0; i < UNI.length; i++) {
-    if (stockIsInIndex(UNI[i][2], idx)) idxFMC += (G.stocks[UNI[i][0]] ? G.stocks[UNI[i][0]].floatCapM : 0);
+function classify(tkr,idx){
+  var s=G.stocks[tkr];if(!s||!s.floatCapM)return null;
+  var rank=s.rank[idx],buf=BUFFERS[idx],isIn=inIdx(s.currentIndex,idx);
+  if(s.maFlag&&!isIn)return null;
+  if(rank===null||rank===undefined)return null;
+  if(!isIn){
+    if(rank<=buf.add)return 'strong_add';
+    if(rank<=buf.add+25)return 'poss_add';
+    if(rank<=buf.add+50)return 'watch_add';
+    return null;
+  }else{
+    if(s.rl<RL_REM[idx])return 'liq_rem';
+    if(rank>=buf.del)return 'strong_rem';
+    if(rank>=buf.del-25)return 'poss_rem';
+    if(rank>=buf.del-50)return 'watch_rem';
+    return null;
   }
-  idxFMC *= 1e6;
-  if (!idxFMC) return {sharesM:0, adm:0, dtc:0};
-  const w = s.floatCapM * 1e6 / idxFMC;
-  const pShares = w * aum / s.price;
-  const pAdm = pShares * s.price;
-  const dtc = s.mdvtAdm > 0 ? pAdm / (s.mdvtAdm * 1e6) : 0;
-  return { sharesM: +(pShares/1e6).toFixed(3), adm: +(pAdm/1e6).toFixed(1), dtc: +dtc.toFixed(1) };
 }
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
-function renderAll() {
-  updateHeader(); updateCards(); renderTL(); renderAssm();
-  var idxList = ['300','200','100','50','20'];
-  for (var i = 0; i < idxList.length; i++) renderIndex(idxList[i]);
+function getCands(idx,removal){
+  var out=[];
+  Object.keys(G.stocks).forEach(function(t){
+    var cl=classify(t,idx);if(!cl)return;
+    var isRem=cl.includes('rem')||cl==='liq_rem';
+    if(removal!==isRem)return;
+    out.push(t);
+  });
+  out.sort(function(a,b){
+    var ra=G.stocks[a].rank[idx]||9999,rb=G.stocks[b].rank[idx]||9999;
+    return removal?rb-ra:ra-rb;
+  });
+  return out;
 }
 
-function updateHeader() {
-  document.getElementById('h-ann').textContent = fmtDate(D.ann);
-  document.getElementById('h-eff').textContent = fmtDate(D.eff);
-  const dt = Math.ceil((D.ann - new Date()) / 86400000);
-  document.getElementById('h-days').textContent = dt > 0 ? dt : '-';
-  document.getElementById('h-pct').textContent = D.pct + '%';
-  document.getElementById('prog-fill').style.width = D.pct + '%';
+// Dates
+const HOLS=new Set(['2025-01-01','2025-01-27','2025-04-18','2025-04-21','2025-04-25','2025-06-09','2025-12-25','2025-12-26','2026-01-01','2026-01-26','2026-04-03','2026-04-06','2026-04-07','2026-04-25','2026-06-08','2026-12-25','2026-12-28']);
+function isTD(d){var w=d.getDay();return w>0&&w<6&&!HOLS.has(d.toISOString().split('T')[0]);}
+function nthFri(y,m,n){var d=new Date(y,m-1,1),f=0;while(true){if(d.getDay()===5){f++;if(f===n)return new Date(d);}d.setDate(d.getDate()+1);}}
+function s2lFri(y,m){var fr=[],d=new Date(y,m-1,1);while(d.getMonth()===m-1){if(d.getDay()===5)fr.push(new Date(d));d.setDate(d.getDate()+1);}return fr[fr.length-2];}
+function cTD(s,e){var c=0,d=new Date(s);while(d<=e){if(isTD(d))c++;d.setDate(d.getDate()+1);}return c;}
+function getDates(){
+  var today=new Date(),ann,yr,mo;
+  [3,6,9,12].some(function(m){var a=nthFri(today.getFullYear(),m,1);if(a>today){ann=a;yr=today.getFullYear();mo=m;return true;}});
+  if(!ann){yr=today.getFullYear()+1;mo=3;ann=nthFri(yr,mo,1);}
+  var eff=nthFri(yr,mo,3),pm=mo===1?12:mo-1,py=mo===1?yr-1:yr,re=s2lFri(py,pm);
+  var rs=new Date(re);rs.setDate(rs.getDate()-95);while(!isTD(rs))rs.setDate(rs.getDate()+1);
+  var tot=cTD(rs,re),now=new Date(Math.min(Math.max(today,rs),re)),el=cTD(rs,now);
+  var tom=new Date(today);tom.setDate(tom.getDate()+1);
+  return{rs,re,ann,eff,tot,el,rem:tom>re?0:cTD(tom,re),pct:Math.round(el/tot*100)};
+}
+var D=getDates();
+
+function calcPTI(tkr,idx){
+  var s=G.stocks[tkr];if(!s||!s.price||!s.sharesM||!D.rem||!D.tot)return null;
+  var buf=BUFFERS[idx];
+  var elig=Object.keys(G.stocks).filter(function(t){return G.stocks[t].rank[idx]!=null;});
+  elig.sort(function(a,b){return G.stocks[a].rank[idx]-G.stocks[b].rank[idx];});
+  var border=elig[buf.add-1];if(!border)return null;
+  var tFMC=G.stocks[border].floatCapM;
+  var reqPx=(tFMC*D.tot-s.floatCapM*D.el)/D.rem/(s.sharesM*s.iwf);
+  if(reqPx<=0)return null;
+  var pm=s.price>0?(reqPx-s.price)/s.price*100:null;
+  return{rp:+reqPx.toFixed(3),pm:pm!=null?+pm.toFixed(1):null,tFMC,border};
 }
 
-function updateCards() {
-  if (!G.lastFetch) { ['cnt-a','cnt-r','cnt-w','cnt-s','cnt-300'].forEach(function(id){ document.getElementById(id).textContent = '-'; }); document.getElementById('last-upd').textContent = '-'; return; }
+function calcFlow(tkr,idx){
+  var s=G.stocks[tkr];if(!s||!s.price||!s.floatCapM)return{sm:0,adm:0,dtc:0};
+  var aumBn=parseFloat((document.getElementById('aum'+idx)||{value:AUM_DEF[idx]}).value||AUM_DEF[idx]);
+  var idxFMC=0;Object.keys(G.stocks).forEach(function(t){if(inIdx(G.stocks[t].currentIndex,idx))idxFMC+=G.stocks[t].floatCapM;});
+  idxFMC*=1e6;if(!idxFMC)return{sm:0,adm:0,dtc:0};
+  var w=s.floatCapM*1e6/idxFMC,pSh=w*aumBn*1e9/s.price,pAdm=pSh*s.price,dtc=s.mdvtAdm>0?pAdm/(s.mdvtAdm*1e6):0;
+  return{sm:+(pSh/1e6).toFixed(3),adm:+(pAdm/1e6).toFixed(1),dtc:+dtc.toFixed(1)};
+}
+
+function renderAll(){
+  updateHeader();updateCards();renderTL();renderAssm();
+  ['300','200','100','50','20'].forEach(renderIndex);
+}
+
+function updateHeader(){
+  document.getElementById('h-ann').textContent=fmtDate(D.ann);
+  document.getElementById('h-eff').textContent=fmtDate(D.eff);
+  var dt=Math.ceil((D.ann-new Date())/86400000);
+  document.getElementById('h-days').textContent=dt>0?dt:'-';
+  document.getElementById('h-pct').textContent=D.pct+'%';
+  document.getElementById('prog-fill').style.width=D.pct+'%';
+}
+
+function updateCards(){
   var sa=0,sr=0,wa=0;
-  var idxList = ['20','50','100','200','300'];
-  for (var ii = 0; ii < idxList.length; ii++) {
-    for (var i = 0; i < UNI.length; i++) {
-      const cl = classify(UNI[i][0], idxList[ii]);
-      if (cl === 'strong_add') sa++;
-      else if (cl === 'strong_rem' || cl === 'liq_rem') sr++;
-      else if (cl && cl.indexOf('poss') !== -1) wa++;
-    }
-  }
-  var cnt300 = UNI.filter(function(u){ return stockIsInIndex(u[2],'300'); }).length;
-  document.getElementById('cnt-a').textContent = sa;
-  document.getElementById('cnt-r').textContent = sr;
-  document.getElementById('cnt-w').textContent = wa;
-  document.getElementById('cnt-s').textContent = Object.keys(G.stocks).length;
-  document.getElementById('cnt-300').textContent = cnt300;
-  document.getElementById('cnt-300s').textContent = cnt300 < 300 ? 'target 300 → +' + (300 - cnt300) + ' needed' : 'at target: 300';
-  document.getElementById('last-upd').textContent = fmtTime(new Date(G.lastFetch));
+  ['20','50','100','200','300'].forEach(function(idx){
+    Object.keys(G.stocks).forEach(function(t){
+      var cl=classify(t,idx);
+      if(cl==='strong_add')sa++;
+      else if(cl==='strong_rem'||cl==='liq_rem')sr++;
+      else if(cl&&cl.includes('poss'))wa++;
+    });
+  });
+  var c300=Object.keys(G.stocks).filter(function(t){return inIdx(G.stocks[t].currentIndex,'300');}).length;
+  document.getElementById('cnt-a').textContent=sa;
+  document.getElementById('cnt-r').textContent=sr;
+  document.getElementById('cnt-w').textContent=wa;
+  document.getElementById('cnt-s').textContent=Object.keys(G.stocks).length;
+  document.getElementById('cnt-300').textContent=c300;
+  document.getElementById('cnt-300s').textContent=c300===300?'✓ at target: 300':c300<300?'need +'+(300-c300):c300-300+' over';
 }
 
-function renderTL() {
-  const nodes = [{date:D.rs,l:'Ref Start',t:'done'},{date:new Date(),l:'Today',t:'now'},{date:D.refEnd,l:'Ref Date',t:new Date()>D.refEnd?'done':'future'},{date:D.ann,l:'Announced',t:'future'},{date:D.eff,l:'Effective',t:'future'}];
-  nodes.sort(function(a,b){ return a.date - b.date; });
-  const span = D.eff - D.rs, tp = Math.min(100, (new Date() - D.rs) / span * 100);
-  const tl = document.getElementById('tl');
-  tl.innerHTML = '<div class="tl-track"></div><div class="tl-fill" style="width:' + tp.toFixed(1) + '%"></div>';
-  nodes.forEach(function(n) {
-    const pct = Math.min(100, (n.date - D.rs) / span * 100);
-    const el = document.createElement('div'); el.className = 'tl-n'; el.style.left = pct.toFixed(1) + '%';
-    el.innerHTML = '<div class="tl-pip ' + n.t + '"></div><div class="tl-txt">' + n.l + '<b>' + fmtDate(n.date) + '</b></div>';
+function renderTL(){
+  var nd=[{date:D.rs,l:'Ref Start',t:'done'},{date:new Date(),l:'Today',t:'now'},{date:D.re,l:'Ref Date',t:new Date()>D.re?'done':'future'},{date:D.ann,l:'Announced',t:'future'},{date:D.eff,l:'Effective',t:'future'}];
+  nd.sort(function(a,b){return a.date-b.date;});
+  var span=D.eff-D.rs,tp=Math.min(100,(new Date()-D.rs)/span*100);
+  var tl=document.getElementById('tl');
+  tl.innerHTML='<div class="tl-track"></div><div class="tl-fill" style="width:'+tp.toFixed(1)+'%"></div>';
+  nd.forEach(function(n){
+    var pct=Math.min(100,(n.date-D.rs)/span*100);
+    var el=document.createElement('div');el.className='tl-n';el.style.left=pct.toFixed(1)+'%';
+    el.innerHTML='<div class="tl-pip '+n.t+'"></div><div class="tl-txt">'+n.l+'<b>'+fmtDate(n.date)+'</b></div>';
     tl.appendChild(el);
   });
 }
 
-function renderAssm() {
-  document.getElementById('a-period').textContent = fmtDate(D.rs) + ' to ' + fmtDate(D.refEnd) + ' · ' + D.elapsed + '/' + D.total + ' trading days (' + D.pct + '% · ' + D.rem + ' remaining)';
+function renderAssm(){
+  document.getElementById('a-period').textContent=fmtDate(D.rs)+' to '+fmtDate(D.re)+' · '+D.el+'/'+D.tot+' trading days ('+D.pct+'% · '+D.rem+' remaining)';
 }
 
-function renderIndex(idx) {
-  const adds = getCands(idx, false);
-  const rems = getCands(idx, true);
-  const buf  = BUFFERS[idx];
-  const freq = idx === '300' ? 'Semi-annual' : 'Quarterly';
-  const noData = !G.lastFetch;
-  var sa = 0, sr = 0;
-  for (var i = 0; i < adds.length; i++) if (classify(adds[i][0], idx) === 'strong_add') sa++;
-  for (var i = 0; i < rems.length; i++) { var cl = classify(rems[i][0], idx); if (cl === 'strong_rem' || cl === 'liq_rem') sr++; }
-
-  var addRows = noData ? noDataRow() : (adds.length ? adds.map(function(u){ return rowHTML(u,idx,false); }).join('') : empRow());
-  var remRows = noData ? noDataRow() : (rems.length ? rems.map(function(u){ return rowHTML(u,idx,true); }).join('') : empRow());
-
-  document.getElementById('idx-' + idx).innerHTML =
-    '<div>' +
-    '<div class="isec-hdr" onclick="togIdx(\'' + idx + '\')">' +
-    '<div class="idx-pill p' + idx + '">ASX ' + idx + '</div>' +
-    '<div class="ititle">S&P/ASX ' + idx + ' — ' + freq + '</div>' +
-    '<div class="imeta">Add ≤' + buf.add + ' · Del ≥' + buf.del + ' · RL≥' + RL_MIN[idx] + '%</div>' +
-    '<div class="ichips">' +
-    (sa > 0 ? '<span class="chip ch-a">+' + sa + ' Strong</span>' : '') +
-    (sr > 0 ? '<span class="chip ch-r">-' + sr + ' Strong</span>' : '') +
-    (noData ? '<span class="chip" style="background:rgba(245,166,35,.1);color:var(--prob);border:1px solid var(--probbd);">Click ↺ Fetch Live</span>' : '') +
-    '</div>' +
-    '<span class="chev op" id="chev-' + idx + '">▼</span>' +
-    '</div>' +
-    '<div class="tbl-outer op" id="tbl-' + idx + '">' +
-    '<div class="split">' +
-    '<div class="tside"><div class="tside-hdr th-a">↑  Addition Candidates</div>' +
-    '<table><thead><tr>' +
-    '<th title="Probability of index change">Status</th>' +
-    '<th title="ASX ticker. M&A = acquisition announced, ineligible for promotion">Ticker</th>' +
-    '<th title="Company name. Click row to expand detail">Company</th>' +
-    '<th title="Float-Adjusted Market Cap: Price x Shares x IWF. The ranking metric.">FF Mkt Cap</th>' +
-    '<th title="Rank by FF Mkt Cap. Must be at or below add buffer rank to qualify.">Rank</th>' +
-    '<th title="Live price from Yahoo Finance (15-20 min delay)">Live Price</th>' +
-    '<th title="Relative Liquidity %. Must be >=50% for ASX200+ or >=30% for ASX300.">RL%</th>' +
-    '<th title="Median Daily Value Traded in A$m/day">MDVT</th>' +
-    '<th title="Estimated passive fund buying if added to this index">Flow A$m</th>' +
-    '<th title="Days to Close: passive flow / MDVT. Higher = more market impact.">DTC</th>' +
-    '<th title="Average price needed for remaining ref period days to rank inside add buffer">Price to Include</th>' +
-    '</tr></thead>' +
-    '<tbody>' + addRows + '</tbody></table></div>' +
-    '<div class="tside"><div class="tside-hdr th-r">↓  Removal Candidates</div>' +
-    '<table><thead><tr>' +
-    '<th title="Probability of removal">Status</th>' +
-    '<th title="ASX ticker">Ticker</th>' +
-    '<th title="Company name. Click row to expand detail.">Company</th>' +
-    '<th title="Float-Adjusted Market Cap — has dropped, pushing rank outside deletion buffer">FF Mkt Cap</th>' +
-    '<th title="Rank — must be at or above del buffer rank to trigger removal">Rank</th>' +
-    '<th title="Live price from Yahoo Finance">Live Price</th>' +
-    '<th title="Relative Liquidity %. Below 25% triggers removal from ASX200.">RL%</th>' +
-    '<th title="Median Daily Value Traded">MDVT</th>' +
-    '<th title="Estimated passive fund selling if removed">Flow A$m</th>' +
-    '<th title="Days of average volume the passive selling represents">DTC</th>' +
-    '<th title="Price the stock needs to recover to in order to rank safely inside index">Price to Safety</th>' +
-    '</tr></thead>' +
-    '<tbody>' + remRows + '</tbody></table></div>' +
+function renderIndex(idx){
+  var adds=getCands(idx,false),rems=getCands(idx,true);
+  var buf=BUFFERS[idx],freq=idx==='300'?'Semi-annual':'Quarterly';
+  var sa=adds.filter(function(t){return classify(t,idx)==='strong_add';}).length;
+  var sr=rems.filter(function(t){var c=classify(t,idx);return c==='strong_rem'||c==='liq_rem';}).length;
+  document.getElementById('idx-'+idx).innerHTML=
+    '<div>'+
+    '<div class="isec-hdr" onclick="togIdx(''+idx+'')">'+
+    '<div class="idx-pill p'+idx+'">ASX '+idx+'</div>'+
+    '<div class="ititle">S&P/ASX '+idx+' — '+freq+'</div>'+
+    '<div class="imeta">Add ≤'+buf.add+' · Del ≥'+buf.del+' · RL≥'+RL_MIN[idx]+'%</div>'+
+    '<div class="ichips">'+
+    (sa>0?'<span class="chip ch-a">+'+sa+' Strong</span>':'')+
+    (sr>0?'<span class="chip ch-r">−'+sr+' Strong</span>':'')+
+    '</div>'+
+    '<span class="chev op" id="chev-'+idx+'">▼</span>'+
+    '</div>'+
+    '<div class="tbl-outer op" id="tbl-'+idx+'">'+
+    '<div class="split">'+
+    side(idx,adds,false)+side(idx,rems,true)+
     '</div></div></div>';
 }
 
-function noDataRow() {
-  return '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--t2);"><div style="font-size:11px;margin-bottom:6px;">No data — click <b style="color:var(--add2)">↺ Fetch Live</b> top right</div><div style="font-size:9px;color:var(--t3);">Fetches live market caps for all ' + UNI.length + ' tracked stocks (~15 seconds)</div></td></tr>';
+function side(idx,list,removal){
+  var h11=removal?'Price to Safety':'Price to Include';
+  var hdr=removal?'<div class="tside-hdr th-r">↓  Removal Candidates</div>':'<div class="tside-hdr th-a">↑  Addition Candidates</div>';
+  var rows=list.length?list.map(function(t){return rowHTML(t,idx,removal);}).join(''):'<tr><td colspan="11" class="emp">No candidates at current rankings</td></tr>';
+  return '<div class="tside">'+hdr+
+    '<table><thead><tr>'+
+    '<th title="Probability of index change">Status</th>'+
+    '<th title="ASX ticker">Ticker</th>'+
+    '<th title="Company — click row to expand detail">Company</th>'+
+    '<th title="Float-Adjusted Market Cap: Price × Shares × IWF">FF Mkt Cap</th>'+
+    '<th title="Rank by FF Mkt Cap — lower = larger = better for additions">Rank</th>'+
+    '<th title="Snapshot price — click ✏️ Update Prices to refresh">Price</th>'+
+    '<th title="Relative Liquidity — must be ≥50% for ASX200 entry, ≥30% for ASX300">RL%</th>'+
+    '<th title="Median Daily Value Traded A$m/day">MDVT</th>'+
+    '<th title="Estimated passive fund flow at rebalance">Flow A$m</th>'+
+    '<th title="Days to Close: passive flow ÷ MDVT">DTC</th>'+
+    '<th title="Average price needed over remaining reference period days">'+h11+'</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
-function empRow() { return '<tr><td colspan="11" class="emp">No candidates at current rankings</td></tr>'; }
 
-function rowHTML(uEntry, idx, removal) {
-  const ticker  = uEntry[0], company = uEntry[1], maFlag = uEntry[4];
-  const s       = G.stocks[ticker];
-  if (!s) return '<tr><td colspan="11" class="emp">' + ticker + ' - data pending</td></tr>';
-  const cl      = classify(ticker, idx);
-  const rank    = s.rank[idx];
-  const buf     = BUFFERS[idx];
-  const flow    = calcFlow(ticker, idx);
-  const pti     = !removal ? calcPTI(ticker, idx) : null;
-  var bc, bl;
-  if      (cl === 'strong_add')                     { bc='pb-sa'; bl='⬆ STRONG'; }
-  else if (cl === 'strong_rem' || cl === 'liq_rem') { bc='pb-sr'; bl='⬇ STRONG'; }
-  else if (cl && cl.indexOf('poss') !== -1)         { bc='pb-ps'; bl='◆ POSS';   }
-  else                                               { bc='pb-wt'; bl='○ WATCH';  }
-  const maxR  = buf.del + 60;
-  const rPct  = Math.min(100, (rank || 0) / maxR * 100);
-  const inZ   = removal ? rank >= buf.del : rank <= buf.add;
-  const rfCls = inZ ? (removal ? 'rf-out' : 'rf-in') : 'rf-near';
-  const rnCls = inZ ? (removal ? 'nn' : 'np') : 'nw';
-  const chgCls = s.chgPct >= 0 ? 'lup' : 'ldn';
-  const chgStr = (s.chgPct >= 0 ? '+' : '') + s.chgPct.toFixed(2) + '%';
-  const rlMin = RL_MIN[idx];
-  const rlCls = s.rl >= rlMin ? 'rl-ok' : s.rl >= RL_REM[idx] ? 'rl-w' : 'rl-b';
-  const dtcCls = flow.dtc < 1 ? 'dtc-ok' : flow.dtc < 5 ? 'dtc-m' : 'dtc-h';
-  const fsgn = removal ? 'nn' : 'np';
-  var ptiHTML = '<span class="nv">-</span>';
-  if (pti) {
-    const pm = pti.pctMove;
-    const pc = pm === null ? '' : pm < 0 ? 'pti-g' : pm < 15 ? 'pti-a' : 'pti-r';
-    const ps = pm !== null ? (pm >= 0 ? '+' : '') + pm + '% from spot' : '?';
-    ptiHTML = '<div class="pti ' + pc + '"><span class="pti-p">A$' + pti.reqPrice + '</span><br><span style="font-size:8px">' + ps + '</span></div>';
+function rowHTML(tkr,idx,removal){
+  var s=G.stocks[tkr];if(!s)return '';
+  var cl=classify(tkr,idx),rank=s.rank[idx],buf=BUFFERS[idx];
+  var flow=calcFlow(tkr,idx),pti=!removal?calcPTI(tkr,idx):null;
+  var bc,bl;
+  if(cl==='strong_add'){bc='pb-sa';bl='⬆ STRONG';}
+  else if(cl==='strong_rem'||cl==='liq_rem'){bc='pb-sr';bl='⬇ STRONG';}
+  else if(cl&&cl.includes('poss')){bc='pb-ps';bl='◆ POSS';}
+  else{bc='pb-wt';bl='○ WATCH';}
+  var rPct=Math.min(100,(rank||0)/(buf.del+60)*100);
+  var inZ=removal?rank>=buf.del:rank<=buf.add;
+  var rfCls=inZ?(removal?'rf-out':'rf-in'):'rf-near';
+  var rnCls=inZ?(removal?'nn':'np'):'nw';
+  var rlCls=s.rl>=RL_MIN[idx]?'rl-ok':s.rl>=RL_REM[idx]?'rl-w':'rl-b';
+  var dtcCls=flow.dtc<1?'dtc-ok':flow.dtc<5?'dtc-m':'dtc-h';
+  var fsgn=removal?'nn':'np';
+  var ptiHTML='<span class="nv">—</span>';
+  if(pti){
+    var pm=pti.pm,pc=pm===null?'':(pm<0?'pti-g':pm<15?'pti-a':'pti-r');
+    ptiHTML='<div class="pti '+pc+'"><span class="pti-p">A$'+pti.rp+'</span><br><span style="font-size:8px">'+(pm!=null?(pm>=0?'+':'')+pm+'% from spot':'?')+'</span></div>';
   }
-  const side = removal ? 'r' : 'a';
-  return '<tr id="row-' + ticker + '-' + idx + '-' + side + '" onclick="togDet(\'' + ticker + '\',\'' + idx + '\',\'' + side + '\')">' +
-    '<td><span class="pb ' + bc + '"><span class="bdot"></span>' + bl + '</span></td>' +
-    '<td><span class="tkr">' + ticker + '</span>' + (maFlag ? '<span class="matag">M&A</span>' : '') + '</td>' +
-    '<td><span class="co" title="' + company + '">' + company + '</span></td>' +
-    '<td class="nv">A$' + (s.floatCapM >= 1000 ? (s.floatCapM / 1000).toFixed(2) + 'b' : s.floatCapM.toFixed(0) + 'm') + '</td>' +
-    '<td><div class="rg"><div class="rg-bar"><div class="rg-fill ' + rfCls + '" style="width:' + rPct + '%"></div></div><span class="rg-num ' + rnCls + '">' + (rank || '-') + '</span></div></td>' +
-    '<td><div class="lpx"><span class="lp-p ' + (s.chgPct >= 0 ? 'np' : 'nn') + '">A$' + s.price.toFixed(3) + '</span><span class="lp-c ' + chgCls + '">' + chgStr + '</span></div></td>' +
-    '<td class="' + rlCls + '">' + s.rl + '%</td>' +
-    '<td class="nv">' + s.mdvtAdm.toFixed(2) + '</td>' +
-    '<td class="' + fsgn + '">' + (flow.adm > 0 ? (removal ? '-' : '+') + 'A$' + flow.adm + 'm' : '-') + '</td>' +
-    '<td class="' + dtcCls + '">' + (flow.dtc > 0 ? flow.dtc + 'd' : '-') + '</td>' +
-    '<td>' + ptiHTML + '</td>' +
-    '</tr>' +
-    '<tr id="det-' + ticker + '-' + idx + '-' + side + '" style="display:none;" class="det-row"><td colspan="11">' + detHTML(ticker, uEntry, idx, removal, s, pti, flow) + '</td></tr>';
+  var sd=removal?'r':'a';
+  return '<tr id="row-'+tkr+'-'+idx+'-'+sd+'" onclick="togDet(''+tkr+'',''+idx+'',''+sd+'')">'+
+    '<td><span class="pb '+bc+'"><span class="bdot"></span>'+bl+'</span></td>'+
+    '<td><span class="tkr">'+tkr+'</span>'+(s.maFlag?'<span class="matag">M&A</span>':'')+' </td>'+
+    '<td><span class="co" title="'+s.company+'">'+s.company+'</span></td>'+
+    '<td class="nv">A$'+(s.floatCapM>=1000?(s.floatCapM/1000).toFixed(2)+'b':s.floatCapM.toFixed(0)+'m')+'</td>'+
+    '<td><div class="rg"><div class="rg-bar"><div class="rg-fill '+rfCls+'" style="width:'+rPct+'%"></div></div><span class="rg-num '+rnCls+'">'+(rank||'—')+'</span></div></td>'+
+    '<td class="nv">A$'+s.price.toFixed(3)+'</td>'+
+    '<td class="'+rlCls+'">'+s.rl+'%</td>'+
+    '<td class="nv">'+s.mdvtAdm.toFixed(2)+'</td>'+
+    '<td class="'+fsgn+'">'+(flow.adm>0?(removal?'−':'+')+' A$'+flow.adm+'m':'—')+'</td>'+
+    '<td class="'+dtcCls+'">'+(flow.dtc>0?flow.dtc+'d':'—')+'</td>'+
+    '<td>'+ptiHTML+'</td>'+
+    '</tr>'+
+    '<tr id="det-'+tkr+'-'+idx+'-'+sd+'" style="display:none;" class="det-row"><td colspan="11">'+detHTML(tkr,idx,removal,s,pti,flow)+'</td></tr>';
 }
 
-function detHTML(ticker, uEntry, idx, removal, s, pti, flow) {
-  const ci = uEntry[2];
-  const buf = BUFFERS[idx];
-  const rankN = s.rank[idx] || '-';
-  const ptiFormula = pti ?
-    'Border stock: ' + pti.borderTicker + ' - Target FF Mkt Cap = A$' + pti.targetFMC.toFixed(0) + 'm\n' +
-    'This stock FF Mkt Cap = A$' + s.floatCapM.toFixed(0) + 'm\n' +
-    'Shares = ' + s.sharesM + 'm  IWF = ' + s.iwf + '\n\n' +
-    'FMC accumulated = A$' + (s.floatCapM * D.elapsed).toFixed(0) + 'm (' + D.elapsed + ' days x A$' + s.floatCapM.toFixed(0) + 'm)\n' +
-    'FMC still needed = A$' + pti.targetFMC.toFixed(0) + 'm x ' + D.total + ' - accumulated\n' +
-    'Required avg daily FMC over ' + D.rem + ' remaining days\n' +
-    '/ (' + s.sharesM + 'm shares x ' + s.iwf + ' IWF)\n\n' +
-    'Required avg price = <span class="hlg">A$' + pti.reqPrice + '</span>\n' +
-    '  (' + (pti.pctMove !== null ? (pti.pctMove >= 0 ? '+' : '') + pti.pctMove + '%' : '') + ' from current A$' + s.price.toFixed(3) + ')'
-    : 'PTI not calculated for removal candidates.';
-  const aumBn = parseFloat((document.getElementById('aum' + idx) || {value: AUM_DEF[idx]}).value || AUM_DEF[idx]);
-  let idxFMC = 0;
-  for (let i = 0; i < UNI.length; i++) if (stockIsInIndex(UNI[i][2], idx)) idxFMC += (G.stocks[UNI[i][0]] ? G.stocks[UNI[i][0]].floatCapM : 0);
-  const wt = idxFMC > 0 ? (s.floatCapM / idxFMC * 100).toFixed(3) : '-';
-  const gapAdd = typeof rankN === 'number' ? Math.max(0, rankN - buf.add) : '-';
-  const gapDel = typeof rankN === 'number' ? Math.max(0, buf.del - rankN) : '-';
-  return '<div class="det-panel">' +
-    '<div class="dp-col"><div class="dp-hd">Live Stock Data</div>' +
-    '<div class="dp-r"><span class="dp-l">Current price</span><span class="dp-v ' + (s.chgPct>=0?'np':'nn') + '">A$' + s.price.toFixed(4) + '</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Todays move</span><span class="dp-v ' + (s.chgPct>=0?'np':'nn') + '">' + (s.chgPct>=0?'+':'') + s.chgPct.toFixed(2) + '%</span></div>' +
-    '<div class="dp-r"><span class="dp-l">FF Mkt Cap</span><span class="dp-v">A$' + s.floatCapM.toFixed(0) + 'm</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Total Mkt Cap</span><span class="dp-v">A$' + s.mktCapM.toFixed(0) + 'm</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Shares</span><span class="dp-v">' + s.sharesM + 'm</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Float shares</span><span class="dp-v">' + s.floatM + 'm</span></div>' +
-    '<div class="dp-r"><span class="dp-l">IWF</span><span class="dp-v">' + s.iwf + (uEntry[3]!==null&&uEntry[3]!==undefined?' (override)':'') + '</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Rank ASX ' + idx + '</span><span class="dp-v">' + rankN + '</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Gap to add buffer</span><span class="dp-v ' + (gapAdd===0?'np':'nw') + '">' + gapAdd + ' ranks</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Gap to del buffer</span><span class="dp-v ' + (typeof gapDel==='number'&&gapDel<10?'nn':'np') + '">' + gapDel + ' ranks</span></div>' +
-    '<div class="dp-r"><span class="dp-l">RL%</span><span class="dp-v ' + (s.rl>=(RL_MIN[idx]||50)?'np':'nn') + '">' + s.rl + '%' + (s.rl<(RL_MIN[idx]||50)?' BELOW THRESHOLD':'') + '</span></div>' +
-    '<div class="dp-r"><span class="dp-l">MDVT</span><span class="dp-v">A$' + s.mdvtAdm.toFixed(3) + 'm/day</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Current index</span><span class="dp-v">ASX ' + (ci||'none') + '</span></div>' +
-    '</div>' +
-    '<div class="dp-col"><div class="dp-hd">Price to ' + (removal?'Safety':'Include') + '</div>' +
-    '<div class="formula">' + ptiFormula + '</div>' +
-    '<div class="dp-hd" style="margin-top:10px;">Passive Flow ASX ' + idx + '</div>' +
-    '<div class="dp-r"><span class="dp-l">Est. index weight</span><span class="dp-v">' + wt + '%</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Passive AUM</span><span class="dp-v">A$' + aumBn + 'bn</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Est. passive shares</span><span class="dp-v">' + flow.sharesM + 'm</span></div>' +
-    '<div class="dp-r"><span class="dp-l">Est. A$ flow</span><span class="dp-v ' + (removal?'nn':'np') + '">' + (removal?'-':'+') + 'A$' + flow.adm + 'm</span></div>' +
-    '<div class="dp-r"><span class="dp-l">DTC</span><span class="dp-v ' + (flow.dtc<1?'np':flow.dtc<5?'nw':'nn') + '">' + flow.dtc + 'd</span></div>' +
-    '<div style="margin-top:8px;font-size:8px;color:var(--t3)">DTC &lt;1 = low impact · 1-5 = moderate · &gt;5 = high, trade ahead</div>' +
-    '</div>' +
-    '<div class="dp-col"><div class="dp-hd">Notes</div>' +
-    '<textarea class="notes-ta" id="notes-' + ticker + '" placeholder="Notes for ' + ticker + '...">' + (localStorage.getItem('note_' + ticker) || '') + '</textarea>' +
-    '<button onclick="localStorage.setItem(\'note_' + ticker + '\',document.getElementById(\'notes-' + ticker + '\').value)" style="margin-top:4px;font-size:8px;padding:3px 8px;background:var(--b1);border:1px solid var(--b2);color:var(--t2);border-radius:3px;cursor:pointer;">Save note</button>' +
+function detHTML(tkr,idx,removal,s,pti,flow){
+  var buf=BUFFERS[idx],rankN=s.rank[idx]||'—';
+  var gA=typeof rankN==='number'?Math.max(0,rankN-buf.add):'—';
+  var gD=typeof rankN==='number'?Math.max(0,buf.del-rankN):'—';
+  var ptiF=pti?
+    'Border stock: '+pti.border+' · Target FF Mkt Cap = A$'+pti.tFMC.toFixed(0)+'m
+'+
+    'This stock FF Mkt Cap = A$'+s.floatCapM.toFixed(0)+'m
+'+
+    'Shares = '+s.sharesM+'m · IWF = '+s.iwf+'
+
+'+
+    'FMC accum. = A$'+s.floatCapM.toFixed(0)+'m × '+D.el+' elapsed days = A$'+(s.floatCapM*D.el).toFixed(0)+'m
+'+
+    'FMC needed = A$'+pti.tFMC.toFixed(0)+'m × '+D.tot+' total days − accumulated
+'+
+    'Required avg daily FMC over '+D.rem+' remaining days
+'+
+    '÷ ('+s.sharesM+'m shares × '+s.iwf+' IWF)
+
+'+
+    'Required average price = <span class="hlg">A$'+pti.rp+'</span>
+'+
+    '  ('+(pti.pm!=null?(pti.pm>=0?'+':'')+pti.pm+'%':'')+' from current A$'+s.price.toFixed(3)+')':
+    'PTI not shown for removal candidates.';
+  var aumBn=parseFloat((document.getElementById('aum'+idx)||{value:AUM_DEF[idx]}).value);
+  var idxFMC=0;Object.keys(G.stocks).forEach(function(t){if(inIdx(G.stocks[t].currentIndex,idx))idxFMC+=G.stocks[t].floatCapM;});
+  var wt=idxFMC>0?(s.floatCapM/idxFMC*100).toFixed(3):'—';
+  return '<div class="det-panel">'+
+    '<div class="dp-col"><div class="dp-hd">Stock Data</div>'+
+    r('Price (snapshot)','A$'+s.price.toFixed(4))+
+    r('FF Mkt Cap','A$'+s.floatCapM.toFixed(0)+'m')+
+    r('Shares on issue',s.sharesM+'m')+
+    r('IWF',s.iwf+(s.iwf<0.99?' (CDI override)':''))+
+    r('Rank ASX '+idx,rankN)+
+    r('Gap to add buffer',gA+' ranks',gA===0?'np':'nw')+
+    r('Gap to del buffer',gD+' ranks',typeof gD==='number'&&gD<10?'nn':'np')+
+    r('RL%',s.rl+'%'+(s.rl<(RL_MIN[idx]||50)?' ⚠ BELOW THRESHOLD':''),s.rl>=(RL_MIN[idx]||50)?'np':'nn')+
+    r('MDVT','A$'+s.mdvtAdm.toFixed(3)+'m/day')+
+    r('Current index','ASX '+(s.currentIndex||'none'))+
+    '</div>'+
+    '<div class="dp-col"><div class="dp-hd">Price to '+(removal?'Safety':'Include')+'</div>'+
+    '<div class="formula">'+ptiF+'</div>'+
+    '<div class="dp-hd" style="margin-top:10px;">Passive Flow ASX '+idx+'</div>'+
+    r('Passive AUM','A$'+aumBn+'bn')+
+    r('Est. index weight',wt+'%')+
+    r('Est. passive shares',flow.sm+'m')+
+    r('Est. A$ flow',(removal?'−':'+')+' A$'+flow.adm+'m',removal?'nn':'np')+
+    r('DTC',flow.dtc+'d',flow.dtc<1?'np':flow.dtc<5?'nw':'nn')+
+    '<div style="margin-top:6px;font-size:8px;color:var(--t3)">DTC&lt;1=low impact · 1-5=moderate · &gt;5=high, trade ahead</div>'+
+    '</div>'+
+    '<div class="dp-col"><div class="dp-hd">Notes</div>'+
+    '<textarea class="notes-ta" id="notes-'+tkr+'" placeholder="Notes for '+tkr+'...">'+(localStorage.getItem('note_'+tkr)||'')+'</textarea>'+
+    '<button onclick="localStorage.setItem('note_'+tkr+'',document.getElementById('notes-'+tkr+'').value)" style="margin-top:4px;font-size:8px;padding:3px 8px;background:var(--b1);border:1px solid var(--b2);color:var(--t2);border-radius:3px;cursor:pointer;">Save note</button>'+
     '</div></div>';
 }
+function r(l,v,cls){return '<div class="dp-r"><span class="dp-l">'+l+'</span><span class="dp-v'+(cls?' '+cls:'')+'" >'+v+'</span></div>';}
 
-// ─── INTERACTIONS ────────────────────────────────────────────────────────────
-function togIdx(idx) { document.getElementById('tbl-'+idx).classList.toggle('op'); document.getElementById('chev-'+idx).classList.toggle('op'); }
-function togDet(tkr,idx,side) {
-  const det = document.getElementById('det-'+tkr+'-'+idx+'-'+side);
-  const row = document.getElementById('row-'+tkr+'-'+idx+'-'+side);
-  if (!det) return;
-  const op = det.style.display !== 'none';
-  det.style.display = op ? 'none' : 'table-row';
-  if (row) row.classList.toggle('xp', !op);
-}
-function setView(v,el) {
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('on'); });
-  el.classList.add('on');
-  ['300','200','100','50','20'].forEach(function(i){ document.getElementById('idx-'+i).style.display = (v==='all'||v===i)?'':'none'; });
-  document.getElementById('cg-view').style.display = v==='cg' ? '' : 'none';
-}
-function updateBadge() {
-  const b=document.getElementById('live-badge'),t=document.getElementById('live-txt'),d=document.getElementById('live-dot');
-  const age=Date.now()-G.lastFetch;
-  if (!G.lastFetch) { b.className='lbadge lb-fetch'; t.textContent='Click Fetch Live'; d.classList.remove('pulse'); }
-  else if (age<90000) { b.className='lbadge lb-live'; t.textContent='Live · '+fmtTime(new Date(G.lastFetch)); d.classList.add('pulse'); }
-  else { b.className='lbadge lb-fetch'; t.textContent='Stale · '+Math.round(age/60000)+'m ago'; d.classList.remove('pulse'); }
+function applyPrices(){
+  var text=document.getElementById('price-input').value;
+  var lines=text.split(/[
+
+]+/);
+  var updated=0;
+  lines.forEach(function(line){
+    var parts=line.trim().split(/[\s	,]+/);
+    if(parts.length<2)return;
+    var tkr=parts[0].toUpperCase().replace(/\.AX$/i,''),px=parseFloat(parts[parts.length-1]);
+    if(!isNaN(px)&&px>0&&G.stocks[tkr]){
+      G.stocks[tkr].price=px;
+      G.stocks[tkr].floatCapM=+(px*G.stocks[tkr].sharesM*G.stocks[tkr].iwf).toFixed(1);
+      updated++;
+    }
+  });
+  if(updated>0){
+    calcRL();ranks();renderAll();
+    document.getElementById('price-result').textContent='✓ Updated '+updated+' stocks — all rankings recalculated';
+    document.getElementById('price-result').style.color='var(--add2)';
+    document.getElementById('snap-badge').textContent='✏️ Prices updated';
+    document.getElementById('snap-date').textContent=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+  }else{
+    document.getElementById('price-result').textContent='No prices recognised. Format: TICKER PRICE e.g. CBA 163.50';
+    document.getElementById('price-result').style.color='var(--rem2)';
+  }
 }
 
-// ─── JSON LOAD ───────────────────────────────────────────────────────────────
-function loadJSON(evt) {
-  const file = evt.target.files[0]; if (!file) return;
-  const r = new FileReader();
-  r.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!data.stocks) { alert('Invalid file'); return; }
-      for (let i = 0; i < data.stocks.length; i++) {
-        const s = data.stocks[i];
-        const u = UNI.find(function(x){ return x[0]===s.ticker; });
-        const iwfOvr = u ? u[3] : null;
-        const sharesRaw = (s.shares_outstanding_m || 0) * 1e6;
-        const floatRaw  = (s.float_shares_m || 0) * 1e6;
-        const iwf = (iwfOvr!==null&&iwfOvr!==undefined) ? iwfOvr : (sharesRaw ? Math.min(floatRaw/sharesRaw,1.0) : 1.0);
-        const floatCapM = s.avg_fmc_3m_m || 0;
-        G.stocks[s.ticker] = { price:s.current_price||0, prevClose:s.current_price||0, chgPct:0, mktCapM:floatCapM/iwf, floatCapM:floatCapM, sharesM:s.shares_outstanding_m||0, floatM:s.float_shares_m||0, iwf:iwf, mdvtAdm:s.mdvt_adm||0, name:s.company||s.ticker, rl:s.relative_liquidity_pct||0, rank:{} };
-      }
-      calcRL(); assignRanks(); G.lastFetch = Date.now();
-      renderAll(); updateBadge();
-      if (!G.timer) G.timer = setInterval(startFetch, 60000);
-      alert('Loaded ' + data.stocks.length + ' stocks from ' + file.name);
-    } catch(err) { alert('Error: ' + err.message); }
+function loadJSON(evt){
+  var file=evt.target.files[0];if(!file)return;
+  var rd=new FileReader();
+  rd.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.stocks)return alert('Invalid file');
+      data.stocks.forEach(function(s){
+        var snap=SNAP.find(function(x){return x[0]===s.ticker;});
+        var iwf=snap?snap[6]:(s.float_shares_m&&s.shares_outstanding_m?Math.min(s.float_shares_m/s.shares_outstanding_m,1.0):1.0);
+        if(!G.stocks[s.ticker])G.stocks[s.ticker]={currentIndex:s.current_index||'none',maFlag:s.ma_flag||false,rank:{}};
+        G.stocks[s.ticker].price=s.current_price||0;
+        G.stocks[s.ticker].floatCapM=s.avg_fmc_3m_m||0;
+        G.stocks[s.ticker].sharesM=s.shares_outstanding_m||0;
+        G.stocks[s.ticker].iwf=iwf;
+        G.stocks[s.ticker].mdvtAdm=s.mdvt_adm||0;
+        G.stocks[s.ticker].company=s.company||s.ticker;
+      });
+      calcRL();ranks();
+      document.getElementById('snap-badge').textContent='🟢 Live: '+file.name;
+      document.getElementById('snap-date').textContent=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+      document.getElementById('update-banner').style.display='none';
+      renderAll();
+      alert('Loaded '+data.stocks.length+' stocks from '+file.name);
+    }catch(err){alert('Error: '+err.message);}
   };
-  r.readAsText(file);
+  rd.readAsText(file);
 }
 
-// ─── CACHE ───────────────────────────────────────────────────────────────────
-const CK = 'asx_rebal_v6';
-function saveCache() { try { localStorage.setItem(CK, JSON.stringify({ts:Date.now(), stocks:G.stocks})); } catch(e) {} }
-function loadCache() { try { const c=JSON.parse(localStorage.getItem(CK)||'null'); if(c&&(Date.now()-c.ts)<20*3600000) return c; } catch(e) {} return null; }
+function togIdx(idx){document.getElementById('tbl-'+idx).classList.toggle('op');document.getElementById('chev-'+idx).classList.toggle('op');}
+function togDet(tkr,idx,side){
+  var det=document.getElementById('det-'+tkr+'-'+idx+'-'+side);
+  var row=document.getElementById('row-'+tkr+'-'+idx+'-'+side);
+  if(!det)return;
+  var op=det.style.display!=='none';
+  det.style.display=op?'none':'table-row';
+  if(row)row.classList.toggle('xp',!op);
+}
+function setView(v,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  ['300','200','100','50','20'].forEach(function(i){document.getElementById('idx-'+i).style.display=(v==='all'||v===i)?'':'none';});
+  document.getElementById('cg-view').style.display=v==='cg'?'':'none';
+}
+function fmtDate(d){if(!d)return'-';return new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});}
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function fmtDate(d) { if(!d)return'-'; return new Date(d).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}); }
-function fmtTime(d) { return d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false}); }
-
-// ─── BOOT ────────────────────────────────────────────────────────────────────
+build();
 renderAll();
-const cached = loadCache();
-if (cached) {
-  G.stocks = cached.stocks;
-  calcRL(); assignRanks();
-  G.lastFetch = cached.ts;
-  renderAll(); updateBadge();
-}
-setTimeout(function() {
-  startFetch().then(function() { if (!G.timer) G.timer = setInterval(startFetch, 60000); });
-}, 1000);
 </script>
 </body>
 </html>
