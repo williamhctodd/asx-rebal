@@ -136,15 +136,14 @@ td{padding:7px 8px;vertical-align:middle;white-space:nowrap;}td:first-child{padd
   </div>
   <div class="hr">
     <div class="snap-badge" id="snap-badge">📸 Snapshot: 22 Apr 2026</div>
+    <button class="hbtn hbtn-g" onclick="document.getElementById('price-editor').style.display='block';document.getElementById('price-input').focus();">✏️ Update Prices</button>
     <label class="hbtn hbtn-a" style="cursor:pointer;">
       📂 Load JSON<input type="file" id="json-file" accept=".json" style="display:none" onchange="loadJSON(event)">
     </label>
   </div>
 </div>
 <div class="update-banner" id="update-banner">
-  <span>📸</span>
-  <span>Snapshot from <b>22 Apr 2026</b> — <b>331 stocks</b>: exactly 20/50/100/200/300 constituents + 31 buffer stocks (potential next-rebal additions). To update prices: click <b>✏️ Update Prices</b> and paste from Bloomberg/market data, or use <b>📂 Load JSON</b> from the Python fetcher.</span>
-  <button class="hbtn hbtn-g" style="white-space:nowrap" onclick="document.getElementById('price-editor').style.display='block';document.getElementById('price-input').focus();">✏️ Update Prices</button>
+  <span>📸 <b>Snapshot: 22 Apr 2026</b> — 331 stocks (ASX 20/50/100/200/300 + 31 buffer). Rankings update instantly when you paste prices.</span>
   <button class="ub-close" onclick="document.getElementById('update-banner').style.display='none'">✕</button>
 </div>
 <div class="price-editor" id="price-editor">
