@@ -874,28 +874,43 @@ function r(l,v,cls){return '<div class="dp-r"><span class="dp-l">'+l+'</span><sp
 
 function applyPrices(){
   var text=document.getElementById('price-input').value;
-  var lines=text.split(/[
-
-]+/);
-  var updated=0;
+  if(!text.trim()){
+    document.getElementById('price-result').textContent='Nothing pasted yet — paste prices in the box first';
+    document.getElementById('price-result').style.color='var(--prob)';
+    return;
+  }
+  var lines=text.split('
+');
+  var updated=0,skipped=[];
   lines.forEach(function(line){
-    var parts=line.trim().split(/[\s	,]+/);
+    line=line.trim();
+    if(!line)return;
+    // Split on any whitespace, tab or comma
+    var parts=line.split(/\s+|	|,/);
+    // Remove empty parts
+    parts=parts.filter(function(p){return p.length>0;});
     if(parts.length<2)return;
-    var tkr=parts[0].toUpperCase().replace(/\.AX$/i,''),px=parseFloat(parts[parts.length-1]);
-    if(!isNaN(px)&&px>0&&G.stocks[tkr]){
+    var tkr=parts[0].toUpperCase().replace('.AX','');
+    var px=parseFloat(parts[parts.length-1]);
+    if(isNaN(px)||px<=0){skipped.push(tkr);return;}
+    if(G.stocks[tkr]){
       G.stocks[tkr].price=px;
-      G.stocks[tkr].floatCapM=+(px*G.stocks[tkr].sharesM*G.stocks[tkr].iwf).toFixed(1);
+      G.stocks[tkr].floatCapM=parseFloat((px*G.stocks[tkr].sharesM*G.stocks[tkr].iwf).toFixed(1));
       updated++;
     }
   });
   if(updated>0){
-    calcRL();ranks();renderAll();
-    document.getElementById('price-result').textContent='✓ Updated '+updated+' stocks — all rankings recalculated';
+    calcRL();
+    ranks();
+    renderAll();
+    var msg='Updated '+updated+' stock'+(updated>1?'s':'')+' — rankings recalculated';
+    if(skipped.length>0)msg+=' ('+skipped.length+' lines skipped)';
+    document.getElementById('price-result').textContent=msg;
     document.getElementById('price-result').style.color='var(--add2)';
-    document.getElementById('snap-badge').textContent='✏️ Prices updated';
+    document.getElementById('snap-badge').textContent='Prices updated';
     document.getElementById('snap-date').textContent=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
   }else{
-    document.getElementById('price-result').textContent='No prices recognised. Format: TICKER PRICE e.g. CBA 163.50';
+    document.getElementById('price-result').textContent='No stocks matched. Check format: CBA 163.50 (one per line)';
     document.getElementById('price-result').style.color='var(--rem2)';
   }
 }
